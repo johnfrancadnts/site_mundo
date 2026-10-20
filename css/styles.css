@@ -27,3 +27,94 @@ body {
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
+
+/* OpenWord responsive refinements: preserve the existing palette and component styling. */
+*, *::before, *::after { box-sizing: border-box; }
+html { width: 100%; min-width: 0; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: 5rem; }
+body { min-width: 0; max-width: 100%; margin: 0; overflow-x: clip; }
+img, video, canvas, svg { max-width: 100%; }
+img { height: auto; }
+input, select, textarea, button { max-width: 100%; font: inherit; }
+input, select, textarea { min-width: 0; }
+button, a, input, select, textarea { touch-action: manipulation; }
+button, [role="button"] { overflow-wrap: anywhere; }
+pre, code { max-width: 100%; overflow-wrap: anywhere; }
+main, header, footer, section, article, form, dialog { min-width: 0; }
+.grid > *, .flex > * { min-width: 0; }
+.break-words { overflow-wrap: anywhere; }
+
+/* Dialogs and forms fit short screens and narrow phones. */
+#auth-modal, #announce-modal, #review-modal, [role="dialog"] {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+#auth-modal > div, #announce-modal > div, #review-modal > div {
+  width: min(100%, 42rem);
+  max-width: 100%;
+  max-height: calc(100dvh - 1rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+#auth-form input, #property-form input, #property-form select, #property-form textarea,
+#auth-form select, #auth-form textarea, form button { min-height: 42px; }
+#photo-preview-grid img, #auth-avatar-preview, #form-user-preview-avatar { object-fit: cover; }
+
+/* Prevent wide content, long addresses, and URLs from expanding the page. */
+#app-main-content, #destaque, #vitrine-section, #filtros-section,
+#suporte, #owner-page-listings-grid { width: 100%; max-width: 100%; }
+#app-main-content *, #suporte * { overflow-wrap: anywhere; }
+#photo-preview-grid { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); }
+
+@media (max-width: 1023px) {
+  header { padding-left: max(.75rem, env(safe-area-inset-left)); padding-right: max(.75rem, env(safe-area-inset-right)); }
+  header > div { flex-wrap: wrap; }
+  header nav { max-width: 100%; }
+}
+
+@media (max-width: 767px) {
+  html { scroll-padding-top: 4rem; }
+  h1 { overflow-wrap: anywhere; }
+  #auth-modal, #announce-modal, #review-modal {
+    align-items: flex-start;
+    padding: max(.5rem, env(safe-area-inset-top)) max(.5rem, env(safe-area-inset-right)) max(.5rem, env(safe-area-inset-bottom)) max(.5rem, env(safe-area-inset-left));
+  }
+  #auth-modal > div, #announce-modal > div, #review-modal > div {
+    border-radius: 1.15rem;
+    padding: 1rem;
+    margin-top: auto;
+    margin-bottom: auto;
+    max-height: calc(100dvh - 1rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+  #auth-modal h3 { padding-right: 1.5rem; }
+  #auth-verification-panel, #email-verification-panel { overflow-wrap: anywhere; }
+  #auth-form .grid, #property-form .grid { min-width: 0; }
+  #auth-form button, #property-form button { white-space: normal; line-height: 1.35; }
+  #property-form label { line-height: 1.4; }
+  #property-form input, #property-form select, #property-form textarea,
+  #auth-form input, #auth-form select, #auth-form textarea { font-size: 16px; }
+  #destaque, #vitrine-section, #filtros-section { padding-left: .75rem; padding-right: .75rem; }
+  #suporte .grid { gap: 1.25rem; }
+  table { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+@media (max-width: 420px) {
+  .text-6xl { font-size: clamp(2.25rem, 11vw, 3.75rem); line-height: 1.05; }
+  .text-5xl { font-size: clamp(2rem, 9vw, 3rem); line-height: 1.1; }
+  .text-4xl { font-size: clamp(1.75rem, 8vw, 2.25rem); line-height: 1.15; }
+  #auth-modal > div, #announce-modal > div, #review-modal > div { padding: .875rem; }
+  #email-verification-panel .flex { min-width: 0; }
+  #email-verification-panel button { width: 100%; }
+}
+
+@media (max-height: 560px) and (orientation: landscape) {
+  #auth-modal, #announce-modal, #review-modal { align-items: flex-start; }
+  #auth-modal > div, #announce-modal > div, #review-modal > div {
+    max-height: calc(100dvh - .75rem);
+    margin-top: .375rem;
+    margin-bottom: .375rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

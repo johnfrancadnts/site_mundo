@@ -1,0 +1,12 @@
+OPENWORD — AJUSTES DE RESPONSIVIDADE
+
+Esta versão parte do ZIP OpenWord-login-cadastro.zip e inclui refinamentos de CSS para telas estreitas, tablets, desktop, orientação horizontal, diálogos, formulários, imagens e conteúdo longo. A paleta, as imagens e a estrutura visual existentes foram preservadas. A configuração viewport foi ajustada para respeitar o zoom de acessibilidade e áreas seguras de celulares.
+
+COMO PUBLICAR
+1. Extraia o ZIP.
+2. Envie/substitua os arquivos mantendo os caminhos: index.html, css/styles.css, js/app.js, js/firebase.js e firestore.rules.
+3. Faça commit no repositório GitHub Pages.
+4. Aguarde a publicação e teste com Ctrl+F5.
+
+IMPORTANTE
+Os ajustes melhoram a adaptação por CSS, mas não é possível garantir compatibilidade perfeita em literalmente todos os aparelhos sem testes reais em vários navegadores e tamanhos. Teste no mínimo 320px, 360px, 390px, tablet e desktop, incluindo cadastro/login, modal de anúncio, fotos e menus.
