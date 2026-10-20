@@ -274,6 +274,76 @@
     } catch (err) { showToast('Foto não carregada', err.message || 'Escolha outra imagem.', 'fa-image'); }
   }
 
+  function showEmailVerificationPanel(email, message) {
+    const panel = document.getElementById('email-verification-panel');
+    const address = document.getElementById('email-verification-address');
+    const messageEl = document.getElementById('email-verification-message');
+    if (address) address.textContent = email || '';
+    if (messageEl && message) messageEl.textContent = message;
+    if (panel) panel.classList.remove('hidden');
+    const modal = document.getElementById('auth-modal');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  function getVerificationFormData() {
+    const preview = document.getElementById('auth-avatar-preview');
+    const previewSrc = preview && !preview.classList.contains('hidden') ? preview.src : '';
+    const avatarUrl = document.getElementById('auth-photo-url').value.trim();
+    return {
+      name: document.getElementById('auth-name').value.trim(),
+      email: document.getElementById('auth-email').value.trim(),
+      password: document.getElementById('auth-password').value,
+      phone: document.getElementById('auth-phone').value.trim(),
+      avatar: avatarUrl || (previewSrc.startsWith('http') || previewSrc.startsWith('data:image/jpeg') ? previewSrc : '')
+    };
+  }
+
+  async function checkEmailVerification() {
+    const data = getVerificationFormData();
+    if (!data.email || !data.password) {
+      showToast('Informe seus dados', 'Preencha o e-mail e a senha usados no cadastro antes de verificar.', 'fa-envelope');
+      return;
+    }
+    try {
+      const result = await window.firebaseBridge.checkEmailVerification(data);
+      if (!result.verified) {
+        showEmailVerificationPanel(data.email, 'Ainda não identificamos a confirmação. Abra o link mais recente enviado ao seu e-mail e depois tente novamente.');
+        showToast('Ainda não confirmado', 'Abra o link no Gmail e volte para verificar novamente.', 'fa-envelope');
+        return;
+      }
+      const profile = result.profile || {};
+      currentUser = { isLoggedIn: true, uid: result.user.uid, name: profile.name || result.user.displayName || data.name || data.email.split('@')[0], email: result.user.email || data.email, phone: profile.phone || data.phone || '', avatar: profile.avatar || result.user.photoURL || data.avatar || '', memberSince: profile.memberSince || new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(new Date()) };
+      document.getElementById('email-verification-panel')?.classList.add('hidden');
+      updateAuthUI();
+      closeAuthModal();
+      await loadFirebaseContent();
+      showToast('E-mail confirmado!', `Conta confirmada. Bem-vindo(a), ${currentUser.name.split(' ')[0]}!`, 'fa-circle-check');
+    } catch (err) {
+      console.error('Erro verificando confirmação de e-mail:', err);
+      showToast('Não foi possível verificar', window.firebaseBridge?.friendlyError(err) || err.message, 'fa-triangle-exclamation');
+    }
+  }
+
+  async function resendEmailVerification() {
+    const data = getVerificationFormData();
+    if (!data.email || !data.password) {
+      showToast('Informe seus dados', 'Preencha o e-mail e a senha usados no cadastro para reenviar o link.', 'fa-envelope');
+      return;
+    }
+    try {
+      const result = await window.firebaseBridge.resendVerification(data);
+      if (result.alreadyVerified) {
+        await checkEmailVerification();
+        return;
+      }
+      showEmailVerificationPanel(data.email, 'Enviamos outro link de confirmação. Confira a caixa de entrada e o spam; depois volte e clique em “Já confirmei — verificar”.');
+      showToast('Link reenviado', 'Confira seu Gmail e também a pasta de spam.', 'fa-envelope-circle-check');
+    } catch (err) {
+      console.error('Erro reenviando verificação:', err);
+      showToast('Não foi possível reenviar', window.firebaseBridge?.friendlyError(err) || err.message, 'fa-triangle-exclamation');
+    }
+  }
+
   async function handleAuthSubmit(e) {
     e.preventDefault();
     const name = document.getElementById('auth-name').value.trim();
@@ -288,7 +358,11 @@
     if (password.length < 6) { showToast('Senha inválida', 'A senha precisa ter pelo menos 6 caracteres.', 'fa-lock'); return; }
     try {
       const result = await window.firebaseBridge.emailPasswordFlow({ name, email, password, phone, avatar: finalAvatar });
-      if (result.needsVerification) { showToast('Confirme seu e-mail', 'Enviamos um link de confirmação. Confirme e depois entre novamente.', 'fa-envelope'); return; }
+      if (result.needsVerification) {
+        showEmailVerificationPanel(email, 'Enviamos um link de confirmação. Abra o Gmail, clique no link e volte ao OpenWord. Depois clique em “Já confirmei — verificar”.');
+        showToast('Confira seu Gmail', 'O painel de confirmação ficará aberto até você concluir ou verificar o e-mail.', 'fa-envelope');
+        return;
+      }
       if (result.user) {
         const profile = result.profile || {};
         currentUser = { isLoggedIn: true, uid: result.user.uid, name: profile.name || result.user.displayName || name || email.split('@')[0], email: result.user.email || email, phone: profile.phone || phone || '', avatar: profile.avatar || result.user.photoURL || finalAvatar || '', memberSince: profile.memberSince || new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(new Date()) };
@@ -1040,6 +1114,9 @@
     showToast('Publicado com Sucesso!', 'Seu imóvel foi adicionado e está em destaque.', 'fa-circle-check');
     showMainView('#destaque');
   }
+
+  window.checkEmailVerification = checkEmailVerification;
+  window.resendEmailVerification = resendEmailVerification;
 
   // Init page; Firebase restores the session and loads cloud content.
   window.addEventListener('DOMContentLoaded', () => {

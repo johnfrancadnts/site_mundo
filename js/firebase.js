@@ -114,6 +114,32 @@ const bridge = {
     return result.user;
   },
 
+  async resendVerification({ email, password }) {
+    const normalizedEmail = email.trim().toLowerCase();
+    const credential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
+    await credential.user.reload();
+    if (credential.user.emailVerified) {
+      await signOut(auth);
+      return { alreadyVerified: true };
+    }
+    await sendEmailVerification(credential.user);
+    await signOut(auth);
+    return { sent: true };
+  },
+
+  async checkEmailVerification({ name, email, password, phone, avatar }) {
+    const normalizedEmail = email.trim().toLowerCase();
+    const credential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
+    await credential.user.reload();
+    const user = credential.user;
+    if (!user.emailVerified) {
+      await signOut(auth);
+      return { verified: false };
+    }
+    const profile = await saveUserProfile(user, { name: name.trim(), phone: phone.trim(), avatar: avatar || '' });
+    return { verified: true, user, profile };
+  },
+
   async sendPasswordReset(email) {
     return sendPasswordResetEmail(auth, email.trim().toLowerCase());
   },

@@ -12,6 +12,7 @@ ANTES DE PUBLICAR
 O QUE ESTÁ CONECTADO
 - Cadastro/login por e-mail e senha no Firebase Authentication.
 - Confirmação de e-mail por link; contas de e-mail/senha não entram até confirmar.
+- Painel persistente no cadastro com endereço de e-mail, instruções, botão “Já confirmei — verificar” e opção de reenviar o link. A verificação usa o e-mail e a senha digitados no formulário; se o usuário já confirmou pelo Gmail, pode validar e entrar sem fechar o modal.
 - Login com Google.
 - Recuperação de senha por link enviado ao e-mail.
 - Perfis em Firestore (coleção users).
