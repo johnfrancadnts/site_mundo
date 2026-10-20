@@ -194,6 +194,37 @@
     }
   });
 
+  // Auth mode: signup or login
+  let authMode = 'signup';
+
+  function toggleAuthMode() {
+    authMode = authMode === 'signup' ? 'login' : 'signup';
+    const title = document.getElementById('auth-modal-title');
+    const subtitle = document.getElementById('auth-modal-subtitle');
+    const submit = document.querySelector('#auth-form button[type="submit"]');
+    const toggle = document.getElementById('auth-mode-toggle');
+    const footer = document.getElementById('auth-footer-note');
+    const nameInput = document.getElementById('auth-name');
+    const phoneInput = document.getElementById('auth-phone');
+    const photoUrl = document.getElementById('auth-photo-url');
+    const photoFile = document.getElementById('auth-photo-file');
+    const nameSection = nameInput?.parentElement;
+    const phoneSection = phoneInput?.parentElement;
+    const photoSection = photoUrl?.parentElement?.parentElement?.parentElement;
+    if (nameSection) nameSection.classList.toggle('hidden', authMode === 'login');
+    if (phoneSection) phoneSection.classList.toggle('hidden', authMode === 'login');
+    if (photoSection) photoSection.classList.toggle('hidden', authMode === 'login');
+    if (nameInput) nameInput.required = authMode === 'signup';
+    if (phoneInput) phoneInput.required = authMode === 'signup';
+    if (title) title.textContent = authMode === 'login' ? 'Entrar na sua conta' : 'Criar sua conta';
+    if (subtitle) subtitle.textContent = authMode === 'login' ? 'Acesse sua conta OpenWord para continuar' : 'Cadastre-se para publicar e gerenciar seus imóveis';
+    if (submit) submit.innerHTML = authMode === 'login' ? '<i class="fa-solid fa-right-to-bracket"></i> ENTRAR' : '<i class="fa-solid fa-user-plus"></i> CRIAR CONTA';
+    if (toggle) toggle.textContent = authMode === 'login' ? 'Ainda não tem conta? Criar conta' : 'Já tem uma conta? Entrar';
+    if (footer) footer.textContent = authMode === 'login' ? 'Use o e-mail e a senha cadastrados. Se confirmou o e-mail, poderá entrar.' : 'A confirmação de e-mail é necessária para acessar com e-mail e senha.';
+    const verifyPanel = document.getElementById('email-verification-panel');
+    if (verifyPanel) verifyPanel.classList.add('hidden');
+  }
+
   // Auth Gate
   function handleAnnounceClick() {
     if (!currentUser.isLoggedIn) {
@@ -205,6 +236,7 @@
   }
 
   function openAuthModal(gateTriggered = false) {
+    if (authMode !== 'signup' && document.getElementById('email-verification-panel')?.classList.contains('hidden')) toggleAuthMode();
     const modal = document.getElementById('auth-modal');
     const notice = document.getElementById('auth-gate-notice');
     if (gateTriggered) {
@@ -346,16 +378,18 @@
 
   async function handleAuthSubmit(e) {
     e.preventDefault();
-    const name = document.getElementById('auth-name').value.trim();
+    const name = authMode === 'signup' ? document.getElementById('auth-name').value.trim() : '';
     const email = document.getElementById('auth-email').value.trim();
     const password = document.getElementById('auth-password').value;
-    const phone = document.getElementById('auth-phone').value.trim();
+    const phone = authMode === 'signup' ? document.getElementById('auth-phone').value.trim() : '';
     const avatarUrl = document.getElementById('auth-photo-url').value.trim();
     const preview = document.getElementById('auth-avatar-preview');
     const previewSrc = preview.classList.contains('hidden') ? '' : preview.src;
     const finalAvatar = avatarUrl || (previewSrc.startsWith('http') || previewSrc.startsWith('data:image/jpeg') ? previewSrc : '');
     if (!window.firebaseBridge) { showToast('Firebase indisponível', 'Aguarde carregar a conexão e tente novamente.', 'fa-triangle-exclamation'); return; }
     if (password.length < 6) { showToast('Senha inválida', 'A senha precisa ter pelo menos 6 caracteres.', 'fa-lock'); return; }
+    if (authMode === 'signup' && !name) { showToast('Informe seu nome', 'Preencha seu nome completo para criar a conta.', 'fa-user'); return; }
+    if (authMode === 'signup' && !phone) { showToast('Informe seu WhatsApp', 'Preencha seu WhatsApp para criar a conta.', 'fa-phone'); return; }
     try {
       const result = await window.firebaseBridge.emailPasswordFlow({ name, email, password, phone, avatar: finalAvatar });
       if (result.needsVerification) {
@@ -1117,6 +1151,7 @@
 
   window.checkEmailVerification = checkEmailVerification;
   window.resendEmailVerification = resendEmailVerification;
+  window.toggleAuthMode = toggleAuthMode;
 
   // Init page; Firebase restores the session and loads cloud content.
   window.addEventListener('DOMContentLoaded', () => {

@@ -30,3 +30,8 @@ LIMITAÇÕES IMPORTANTES
 
 CONFIGURAÇÃO FIREBASE
 O arquivo js/firebase.js já contém o firebaseConfig fornecido pelo proprietário do projeto sitemundo-c2f7d. A configuração web é normalmente pública; nunca adicione chaves privadas de conta de serviço, senhas SMTP ou segredos de API no frontend.
+
+ATUALIZAÇÃO: LOGIN E CADASTRO SEPARADOS
+- Na tela de autenticação, o botão inferior alterna entre “Já tem uma conta? Entrar” e “Ainda não tem conta? Criar conta”.
+- No modo Entrar, nome, WhatsApp e foto ficam ocultos; o login usa apenas e-mail e senha.
+- O login com Google e a recuperação de senha continuam disponíveis.
