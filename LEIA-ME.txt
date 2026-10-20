@@ -1,0 +1,31 @@
+OpenWord + Firebase — instruções de configuração
+
+O pacote mantém o HTML e o CSS originais e conecta autenticação e dados ao Firebase.
+
+ANTES DE PUBLICAR
+1. No Firebase Console > Authentication > Settings/Configurações > Authorized domains/Domínios autorizados, adicione o domínio exato onde o site será publicado (por exemplo, seuusuario.github.io). Use HTTPS. Não abra o site diretamente como file://.
+2. Em Authentication > Método de login, deixe E-mail/senha e Google ativados.
+3. Em Firestore Database > Regras, substitua as regras atuais pelo conteúdo de firestore.rules e clique em Publicar. Revise as regras antes de publicar em produção.
+4. Em Authentication, confira o modelo de e-mail de verificação e o modelo de redefinição de senha. O Firebase padrão envia links, não códigos numéricos.
+5. Publique index.html, css/, js/ e firestore.rules no mesmo diretório do site.
+
+O QUE ESTÁ CONECTADO
+- Cadastro/login por e-mail e senha no Firebase Authentication.
+- Confirmação de e-mail por link; contas de e-mail/senha não entram até confirmar.
+- Login com Google.
+- Recuperação de senha por link enviado ao e-mail.
+- Perfis em Firestore (coleção users).
+- Anúncios e avaliações persistidos no Firestore (properties e reviews).
+- Regras: os anúncios e avaliações são públicos para leitura; somente o proprietário autenticado pode alterar o próprio anúncio; cada usuário lê/escreve seu perfil privado; avaliações exigem usuário autenticado e proíbem autoavaliação.
+
+FOTOS E LIMITE GRATUITO
+O Cloud Storage deste projeto pede upgrade para Blaze, então este pacote não usa Cloud Storage. Para permitir que o site funcione no Spark, as fotos escolhidas no aparelho são convertidas para JPEG comprimido e guardadas dentro do documento do anúncio no Firestore. Para manter cada documento abaixo do limite do Firestore, o site limita a 5 fotos carregadas do aparelho por anúncio (até cerca de 95 KB cada) e verifica o tamanho total antes de salvar. Isso é uma solução de baixo volume para começar, não é a arquitetura ideal para um portal imobiliário grande; Firestore é um banco de documentos, não um serviço de armazenamento de imagens. URLs externas de imagem também são aceitas. Faça cópias de segurança e monitore as quotas gratuitas.
+
+LIMITAÇÕES IMPORTANTES
+- Não há código numérico de verificação por e-mail. A confirmação e a recuperação usam os links oficiais do Firebase. Um código numérico exige backend/serviço de e-mail adicional e implementação segura.
+- O botão de login combinado tenta entrar primeiro quando os campos de nome e WhatsApp estão vazios; para criar uma conta nova, preencha nome, e-mail, senha e WhatsApp.
+- Usuários do Google podem precisar informar WhatsApp antes de publicar, pois o anúncio usa esse número para o contato via WhatsApp.
+- Não habilite faturamento sem revisar custos. Este pacote não ativa plano Blaze.
+
+CONFIGURAÇÃO FIREBASE
+O arquivo js/firebase.js já contém o firebaseConfig fornecido pelo proprietário do projeto sitemundo-c2f7d. A configuração web é normalmente pública; nunca adicione chaves privadas de conta de serviço, senhas SMTP ou segredos de API no frontend.
