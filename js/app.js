@@ -858,7 +858,7 @@
       card.className = 'w-[260px] xs:w-[285px] sm:w-[340px] shrink-0 bg-cardnavy/95 border border-cyan-900/50 hover:border-neon/70 rounded-2xl p-3 sm:p-4 shadow-xl transition-all duration-300 flex flex-col justify-between group';
       
       card.innerHTML = `
-        <div class="relative w-full h-40 sm:h-48 rounded-xl overflow-hidden bg-black/60 border border-slate-800 flex items-center justify-center">
+        <div class="property-photo-frame relative w-full h-40 sm:h-48 rounded-xl overflow-hidden bg-black/60 flex items-center justify-center">
           <img src="${prop.photos[0]}" alt="${prop.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" onclick="openLightbox('${prop.photos[0]}', '${prop.title}')">
           <span class="absolute top-2 left-2 text-[9px] sm:text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-md" style="background:${cfg.bg}; color:${cfg.color}; border: 1px solid ${cfg.border}; backdrop-filter: blur(4px);">
             ${prop.typeLabel}
