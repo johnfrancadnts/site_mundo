@@ -1,0 +1,16 @@
+OpenWord — alterações no formulário e publicações
+
+O que foi ajustado:
+- Finalidade começa sem nenhuma opção selecionada; o usuário precisa escolher.
+- O campo Área (m²) foi trocado por Lote (ex.: 10x20).
+- Para Área de Lazer, há uma caixa para dispensar a informação do lote.
+- Quantidade de Quartos, Salas, Cozinhas e Banheiros é selecionada em listas suspensas; vagas de garagem e área externa foram removidas.
+- Posição solar não começa selecionada.
+- Campo de texto “Informações da casa mais detalhadas”; a descrição aparece no imóvel em destaque.
+- O limite fixo de cinco fotos foi retirado. Fotos selecionadas do aparelho ainda precisam caber no limite de tamanho de documento do Firestore (o sistema avisa quando excede); URLs externas permitem adicionar mais fotos sem embutir os arquivos no documento.
+- O dono autenticado de um anúncio vê o botão Apagar no cartão da publicação. A exclusão verifica a conta autenticada e depende das regras de segurança do Firestore que permitem ao dono excluir seu próprio anúncio.
+- O botão da seção de imóvel em destaque agora diz “ENTRAR EM CONTATO” e abre o WhatsApp do anunciante com a mensagem predefinida do anúncio.
+
+Como publicar: substitua os arquivos correspondentes no repositório GitHub Pages, preservando as pastas css e js, faça commit e aguarde a atualização do site. Depois atualize a página com Ctrl+F5.
+
+Observação importante: o Firebase Firestore limita o tamanho de cada documento. Por isso, “sem limite de fotos” não pode significar arquivos locais de tamanho ilimitado no banco atual. Para grande quantidade de fotos locais, será necessário usar um serviço de armazenamento de arquivos; o upload para Firebase Storage exige a configuração de cobrança que você havia preferido evitar. Não alterei seu plano de cobrança.

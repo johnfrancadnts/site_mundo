@@ -5,7 +5,7 @@ import {
   GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, updateProfile
 } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
 import {
-  getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, serverTimestamp
+  getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, deleteDoc, serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js';
 
 // Configuração do app Web fornecida pelo proprietário do projeto Firebase.
@@ -171,6 +171,14 @@ const bridge = {
     if (property.ownerId !== auth.currentUser.uid) throw new Error('A conta autenticada não corresponde ao proprietário.');
     const data = { ...property, ownerId: auth.currentUser.uid, createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
     await setDoc(doc(db, 'properties', property.id), data);
+  },
+  async deleteProperty(propertyId) {
+    if (!auth.currentUser) throw new Error('Faça login para apagar um anúncio.');
+    const ref = doc(db, 'properties', propertyId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) throw new Error('Este anúncio já não existe.');
+    if (snap.data().ownerId !== auth.currentUser.uid) throw new Error('Você só pode apagar anúncios da sua própria conta.');
+    await deleteDoc(ref);
   },
   async loadReviews() {
     const snap = await getDocs(collection(db, 'reviews'));

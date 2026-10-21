@@ -118,3 +118,138 @@ main, header, footer, section, article, form, dialog { min-width: 0; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* OpenWord — responsive hardening for phones, tablets, desktops and large TVs. */
+:root {
+  --ow-page-gutter: clamp(.75rem, 2.4vw, 2rem);
+  --ow-control-height: 44px;
+}
+html, body { max-width: 100%; min-height: 100%; }
+body { overflow-x: clip; }
+#app-main-content, #view-home, #view-owner-profile, #destaque, #vitrine-section,
+#filtros-section, #suporte, #property-form, #auth-form { min-width: 0; }
+#app-main-content section { min-width: 0; }
+#app-main-content .grid, #app-main-content .flex,
+#announce-modal .grid, #announce-modal .flex,
+#review-modal .grid, #auth-modal .grid { min-width: 0; }
+#app-main-content .grid > *, #app-main-content .flex > *,
+#announce-modal .grid > *, #announce-modal .flex > * { min-width: 0; }
+
+/* Text and media should wrap/scale instead of pushing their containers wider. */
+h1, h2, h3, h4, p, label, a, button, span, strong, small { overflow-wrap: anywhere; }
+img, video, iframe, canvas { max-width: 100%; }
+#featured-main-img, #lightbox-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+#properties-slider { width: 100%; max-width: 100%; overscroll-behavior-x: contain; scroll-snap-type: x proximity; }
+#properties-slider > * { scroll-snap-align: start; }
+#properties-slider > div:not([class*="w-full"]) { width: clamp(15rem, 28vw, 21.25rem); max-width: calc(100vw - 2rem); }
+#photo-preview-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 4.25rem), 1fr)); }
+#photo-preview-grid > * { min-width: 0; }
+
+/* Dialogs remain inside the visible screen and can scroll independently. */
+#auth-modal, #announce-modal, #review-modal, #lightbox-modal {
+  box-sizing: border-box;
+  padding-top: max(.5rem, env(safe-area-inset-top));
+  padding-right: max(.5rem, env(safe-area-inset-right));
+  padding-bottom: max(.5rem, env(safe-area-inset-bottom));
+  padding-left: max(.5rem, env(safe-area-inset-left));
+  overscroll-behavior: contain;
+}
+#auth-modal > div, #announce-modal > div, #review-modal > div {
+  min-width: 0;
+  width: min(100%, 48rem);
+  max-width: 100%;
+  max-height: calc(100vh - 1rem);
+  max-height: calc(100dvh - 1rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-x: clip;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+#lightbox-modal { overflow: auto; }
+#lightbox-modal > div { max-width: min(100%, 96rem); min-width: 0; }
+#property-form input, #property-form select, #property-form textarea,
+#auth-form input, #auth-form select, #auth-form textarea,
+#review-modal input, #review-modal textarea, #review-modal select {
+  width: 100%; min-width: 0; max-width: 100%;
+}
+#property-form input[type="checkbox"], #property-form input[type="radio"],
+#auth-form input[type="checkbox"], #auth-form input[type="radio"] { width: auto; }
+#property-form button, #auth-form button, #review-modal button { min-width: 0; }
+#property-form textarea { resize: vertical; }
+
+/* Keep navigation and account controls from colliding at intermediate widths. */
+header { min-width: 0; }
+header > div:first-child { min-width: 0; }
+header nav { min-width: 0; }
+#account-dropdown { max-width: calc(100vw - 1rem); }
+#toast { max-width: calc(100vw - 1.5rem); }
+button, input, select, textarea { scroll-margin-block: 6rem; }
+button, a { -webkit-tap-highlight-color: transparent; }
+
+@media (max-width: 359px) {
+  :root { --ow-page-gutter: .625rem; }
+  header { padding-left: .5rem !important; padding-right: .5rem !important; }
+  header > div:first-child { gap: .35rem !important; }
+  header > div:first-child > div:first-child { gap: .25rem !important; }
+  header > div:first-child > div:last-child { gap: .25rem !important; }
+  header #account-btn { padding-left: .35rem; padding-right: .35rem; }
+  header #account-btn-label { max-width: 3rem; }
+  header button[onclick="handleAnnounceClick()"] { padding-left: .45rem; padding-right: .45rem; }
+  #destaque, #vitrine-section, #filtros-section { padding-left: .5rem; padding-right: .5rem; }
+  #announce-modal > div, #auth-modal > div, #review-modal > div { padding: .75rem; border-radius: 1rem; }
+  #properties-slider > div:not([class*="w-full"]) { width: calc(100vw - 2rem); max-width: calc(100vw - 2rem); }
+  #property-form .grid.grid-cols-2 { grid-template-columns: minmax(0, 1fr); }
+  #photo-preview-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 360px) and (max-width: 639px) {
+  #properties-slider > div:not([class*="w-full"]) { width: min(82vw, 21.25rem); max-width: calc(100vw - 2rem); }
+  #property-form .grid { gap: .625rem; }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  :root { --ow-page-gutter: 1.25rem; }
+  header nav { gap: .75rem; }
+  #destaque, #vitrine-section, #filtros-section { padding-left: var(--ow-page-gutter); padding-right: var(--ow-page-gutter); }
+  #announce-modal > div { width: min(100%, 46rem); }
+  #properties-slider > div:not([class*="w-full"]) { width: clamp(18rem, 42vw, 21.25rem); }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  header nav { gap: .7rem !important; font-size: .72rem !important; }
+  header > div:first-child { gap: .75rem !important; }
+  header > div:first-child > div:first-child { flex-shrink: 0; }
+  header > div:first-child > div:last-child { flex-shrink: 0; }
+  #announce-modal > div { width: min(94vw, 48rem); }
+}
+
+@media (min-width: 1280px) and (max-width: 1919px) {
+  #properties-slider > div:not([class*="w-full"]) { width: clamp(19rem, 25vw, 21.25rem); }
+}
+
+/* TV / very wide monitors: use the space without stretching text lines endlessly. */
+@media (min-width: 1920px) {
+  html { font-size: 18px; }
+  :root { --ow-page-gutter: clamp(2rem, 3vw, 4rem); }
+  .max-w-7xl { max-width: min(90vw, 1720px) !important; }
+  #destaque, #vitrine-section, #filtros-section { padding-left: var(--ow-page-gutter); padding-right: var(--ow-page-gutter); }
+  #properties-slider > div:not([class*="w-full"]) { width: clamp(21rem, 22vw, 25rem); }
+  #announce-modal > div { width: min(75vw, 58rem); }
+}
+
+/* Landscape phones and short browser windows. */
+@media (max-height: 520px) and (orientation: landscape) {
+  header { position: relative; }
+  #auth-modal, #announce-modal, #review-modal { align-items: flex-start; }
+  #auth-modal > div, #announce-modal > div, #review-modal > div {
+    margin-block: .25rem;
+    max-height: calc(100vh - .5rem);
+    max-height: calc(100dvh - .5rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+}
+
+/* Avoid clipped focus rings and make keyboard navigation visible. */
+:focus-visible { outline: 2px solid #00e6a8; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  #properties-slider { scroll-behavior: auto; }
+}

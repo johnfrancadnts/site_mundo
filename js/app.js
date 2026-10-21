@@ -578,27 +578,48 @@
 
   // POSIÇÃO SOLAR (STRICT 2 OPÇÕES)
   function selectSunPosition(choice) {
-    document.getElementById('prop-sun').value = choice;
+    document.getElementById('prop-sun').value = choice || '';
     const btnSol = document.getElementById('sun-btn-sol');
     const btnSombra = document.getElementById('sun-btn-sombra');
+    const inactive = 'sun-choice-btn py-2 px-1.5 rounded-xl border border-slate-700 bg-slate-900/80 text-slate-400 text-[11px] font-semibold flex items-center justify-center gap-1 transition min-h-[42px]';
+    btnSol.className = inactive;
+    btnSombra.className = inactive;
+    if (choice === 'Lado do Sol') btnSol.className = 'sun-choice-btn py-2 px-1.5 rounded-xl border border-neon bg-neon/15 text-neon text-[11px] font-bold flex items-center justify-center gap-1 transition min-h-[42px]';
+    if (choice === 'Lado da Sombra') btnSombra.className = 'sun-choice-btn py-2 px-1.5 rounded-xl border border-cyan-400 bg-cyan-400/15 text-cyan-300 text-[11px] font-bold flex items-center justify-center gap-1 transition min-h-[42px]';
+  }
 
-    if (choice === 'Lado do Sol') {
-      btnSol.className = 'sun-choice-btn py-2 px-1.5 rounded-xl border border-neon bg-neon/15 text-neon text-[11px] font-bold flex items-center justify-center gap-1 transition min-h-[42px]';
-      btnSombra.className = 'sun-choice-btn py-2 px-1.5 rounded-xl border border-slate-700 bg-slate-900/80 text-slate-400 text-[11px] font-semibold flex items-center justify-center gap-1 hover:border-slate-500 transition min-h-[42px]';
-    } else {
-      btnSombra.className = 'sun-choice-btn py-2 px-1.5 rounded-xl border border-cyan-400 bg-cyan-400/15 text-cyan-300 text-[11px] font-bold flex items-center justify-center gap-1 transition min-h-[42px]';
-      btnSol.className = 'sun-choice-btn py-2 px-1.5 rounded-xl border border-slate-700 bg-slate-900/80 text-slate-400 text-[11px] font-semibold flex items-center justify-center gap-1 hover:border-slate-500 transition min-h-[42px]';
-    }
+  function updateLotOptions() {
+    const type = document.getElementById('prop-type').value;
+    const optional = document.getElementById('prop-lot-optional');
+    const lot = document.getElementById('prop-meters');
+    const mark = document.getElementById('lot-required-mark');
+    const isLeisure = type === 'lazer';
+    optional.disabled = !isLeisure;
+    if (!isLeisure) optional.checked = false;
+    lot.required = !(isLeisure && optional.checked);
+    lot.disabled = isLeisure && optional.checked;
+    if (lot.disabled) lot.value = '';
+    mark.classList.toggle('hidden', !lot.required);
+  }
+
+  function populateRoomSelectors() {
+    [['prop-rooms', 20], ['prop-livingrooms', 20], ['prop-kitchens', 10], ['prop-baths', 20]].forEach(([id, max]) => {
+      const select = document.getElementById(id);
+      if (!select || select.options.length > 1) return;
+      for (let n = 0; n <= max; n++) {
+        const option = document.createElement('option');
+        option.value = String(n);
+        option.textContent = String(n);
+        select.appendChild(option);
+      }
+    });
   }
 
   // MULTIPLE PHOTOS MANAGEMENT
   async function handleMultiplePhotoUpload(input) {
     if (!input.files || !input.files.length) return;
     const files = Array.from(input.files);
-    const available = Math.max(0, 5 - uploadedPhotos.filter(src => src.startsWith('data:image')).length);
-    if (available === 0) { showToast('Limite de fotos', 'Para manter os anúncios no banco gratuito, use até 5 fotos carregadas do aparelho. Você ainda pode adicionar URLs de imagens.', 'fa-image'); input.value = ''; return; }
-    if (files.length > available) showToast('Limite de fotos', `Serão carregadas no máximo ${available} foto(s) do aparelho para este anúncio.`, 'fa-circle-info');
-    for (const file of files.slice(0, available)) {
+    for (const file of files) {
       if (!file.type.startsWith('image/')) continue;
       try { uploadedPhotos.push(await compressImageFile(file, 95000, 1200)); renderUploadedPhotosGrid(); }
       catch (err) { showToast('Foto não carregada', err.message || 'Tente uma imagem menor.', 'fa-image'); }
@@ -703,7 +724,11 @@
     document.getElementById('featured-price-label').textContent = currentFeatured.priceLabel;
     document.getElementById('featured-price').textContent = currentFeatured.price;
     document.getElementById('featured-price').style.color = cfg.color;
-    document.getElementById('featured-meters').textContent = currentFeatured.meters;
+    document.getElementById('featured-meters').textContent = currentFeatured.meters || 'Não informado';
+    const descWrap = document.getElementById('featured-description-wrap');
+    const description = currentFeatured.description || '';
+    document.getElementById('featured-description').textContent = description;
+    descWrap.classList.toggle('hidden', !description.trim());
 
     document.getElementById('featured-owner-name').textContent = currentFeatured.ownerName;
     document.getElementById('featured-owner-phone').textContent = currentFeatured.ownerPhone;
@@ -722,12 +747,10 @@
     typeTag.style.borderColor = cfg.color;
     typeTag.style.backgroundColor = cfg.bg;
 
-    document.getElementById('feat-quartos').innerHTML = `<strong>${currentFeatured.rooms.quartos}</strong> Quartos`;
-    document.getElementById('feat-banheiros').innerHTML = `<strong>${currentFeatured.rooms.banheiros}</strong> Banheiros`;
-    document.getElementById('feat-cozinha').innerHTML = `<strong>${currentFeatured.rooms.cozinhas}</strong> Cozinha(s)`;
-    document.getElementById('feat-servico').textContent = currentFeatured.rooms.servico;
-    document.getElementById('feat-quintal').textContent = currentFeatured.rooms.quintal;
-    document.getElementById('feat-garagem').innerHTML = `<strong>${currentFeatured.rooms.garagem}</strong>`;
+    document.getElementById('feat-quartos').innerHTML = `<strong>${currentFeatured.rooms.quartos ?? '—'}</strong> Quartos`;
+    document.getElementById('feat-salas').innerHTML = `<strong>${currentFeatured.rooms.salas ?? '—'}</strong> Salas`;
+    document.getElementById('feat-banheiros').innerHTML = `<strong>${currentFeatured.rooms.banheiros ?? '—'}</strong> Banheiros`;
+    document.getElementById('feat-cozinha').innerHTML = `<strong>${currentFeatured.rooms.cozinhas ?? '—'}</strong> Cozinha(s)`;
     
     document.getElementById('feat-sol').textContent = currentFeatured.rooms.sol;
     const solIcon = document.getElementById('feat-sol-icon');
@@ -756,7 +779,9 @@
       cleanPhone = `55${cleanPhone}`;
     }
     const whatsMsg = encodeURIComponent(`Olá, vi o anúncio no OpenWord: "${currentFeatured.title}" (${currentFeatured.price}). Ainda está disponível?`);
-    document.getElementById('featured-whatsapp-btn').href = `https://wa.me/${cleanPhone}?text=${whatsMsg}`;
+    const contactUrl = `https://wa.me/${cleanPhone}?text=${whatsMsg}`;
+    document.getElementById('featured-whatsapp-btn').href = contactUrl;
+    document.getElementById('featured-contact-btn').href = contactUrl;
   }
 
   function prevFeaturedImg() {
@@ -859,10 +884,11 @@
               <span class="text-[11px] font-semibold text-slate-300">${prop.meters}</span>
             </div>
 
-            <div class="grid grid-cols-3 gap-1 py-2 text-[10px] sm:text-[11px] text-slate-300 border-b border-slate-800/60">
-              <span class="flex items-center gap-1"><i class="fa-solid fa-bed text-neon text-[9px]"></i> ${prop.rooms.quartos} qtos</span>
-              <span class="flex items-center gap-1"><i class="fa-solid fa-bath text-neon text-[9px]"></i> ${prop.rooms.banheiros} bws</span>
-              <span class="flex items-center gap-1"><i class="fa-solid fa-car text-neon text-[9px]"></i> ${prop.rooms.garagem.split(' ')[0]} vag</span>
+            <div class="grid grid-cols-2 gap-1 py-2 text-[10px] sm:text-[11px] text-slate-300 border-b border-slate-800/60">
+              <span class="flex items-center gap-1"><i class="fa-solid fa-bed text-neon text-[9px]"></i> ${prop.rooms.quartos} quartos</span>
+              <span class="flex items-center gap-1"><i class="fa-solid fa-couch text-neon text-[9px]"></i> ${prop.rooms.salas ?? '—'} salas</span>
+              <span class="flex items-center gap-1"><i class="fa-solid fa-bath text-neon text-[9px]"></i> ${prop.rooms.banheiros} banheiros</span>
+              <span class="flex items-center gap-1"><i class="fa-solid fa-utensils text-neon text-[9px]"></i> ${prop.rooms.cozinhas} cozinhas</span>
             </div>
             
             <div class="py-1 text-[10px] sm:text-[11px] text-slate-400 flex items-center justify-between">
@@ -891,9 +917,10 @@
             </div>
 
             <div class="mt-2 flex items-center gap-2">
-              <button onclick="setAsFeatured('${prop.id}')" class="w-full py-1.5 rounded-lg bg-slate-800 hover:bg-neon hover:text-darknavy text-slate-200 text-[11px] font-bold transition border border-slate-700 hover:border-neon flex items-center justify-center gap-1">
+              <button onclick="setAsFeatured('${prop.id}')" class="flex-1 py-1.5 rounded-lg bg-slate-800 hover:bg-neon hover:text-darknavy text-slate-200 text-[11px] font-bold transition border border-slate-700 hover:border-neon flex items-center justify-center gap-1">
                 <i class="fa-solid fa-star text-yellow-400"></i> Ver no Destaque
               </button>
+              ${currentUser.isLoggedIn && prop.ownerId === currentUser.uid ? `<button onclick="deleteProperty('${prop.id}')" class="py-1.5 px-2 rounded-lg bg-red-950/70 hover:bg-red-600 text-red-200 text-[11px] font-bold transition border border-red-900 flex items-center justify-center gap-1" title="Apagar meu anúncio"><i class="fa-solid fa-trash"></i> Apagar</button>` : ''}
             </div>
 
             <div class="mt-1.5 text-[9px] text-slate-500 flex items-center justify-between">
@@ -906,6 +933,27 @@
       
       slider.appendChild(card);
     });
+  }
+
+  async function deleteProperty(propId) {
+    const property = propertyList.find(p => p.id === propId);
+    if (!property) return;
+    if (!currentUser.isLoggedIn || property.ownerId !== currentUser.uid) {
+      showToast('Ação não permitida', 'Você só pode apagar os anúncios publicados pela sua própria conta.', 'fa-lock');
+      return;
+    }
+    if (!confirm(`Tem certeza que deseja apagar o anúncio "${property.title}"? Essa ação não pode ser desfeita.`)) return;
+    try {
+      await window.firebaseBridge.deleteProperty(propId);
+      propertyList = propertyList.filter(p => p.id !== propId);
+      if (currentFeatured?.id === propId) currentFeatured = propertyList[0] || null;
+      renderPropertiesVitrine();
+      updateFeaturedUI();
+      showToast('Anúncio apagado', 'Seu imóvel foi removido da plataforma.', 'fa-trash');
+    } catch (err) {
+      console.error('Erro apagando anúncio:', err);
+      showToast('Não foi possível apagar', window.firebaseBridge?.friendlyError(err) || 'Confira sua conexão e as regras do Firestore.', 'fa-triangle-exclamation');
+    }
   }
 
   function scrollCarousel(direction) {
@@ -987,13 +1035,17 @@
 
     if (step === 3 && currentStep === 2) {
       const price = document.getElementById('prop-price').value.trim();
+      const type = document.getElementById('prop-type').value;
       const meters = document.getElementById('prop-meters').value.trim();
-      const rooms = document.getElementById('prop-rooms').value.trim();
-      const baths = document.getElementById('prop-baths').value.trim();
-      const kitchens = document.getElementById('prop-kitchens').value.trim();
+      const rooms = document.getElementById('prop-rooms').value;
+      const livingRooms = document.getElementById('prop-livingrooms').value;
+      const baths = document.getElementById('prop-baths').value;
+      const kitchens = document.getElementById('prop-kitchens').value;
+      const sun = document.getElementById('prop-sun').value;
+      const lotOptional = document.getElementById('prop-lot-optional').checked;
 
-      if (!price || !meters || !rooms || !baths || !kitchens) {
-        showToast('Campos Obrigatórios', 'Informe o valor, metragem e quantidade de cômodos.', 'fa-triangle-exclamation');
+      if (!type || !price || (!meters && !(type === 'lazer' && lotOptional)) || rooms === '' || livingRooms === '' || baths === '' || kitchens === '' || !sun) {
+        showToast('Campos Obrigatórios', 'Selecione a finalidade, a posição solar, informe o valor e selecione a quantidade de cada cômodo. O lote pode ficar vazio apenas em imóvel de lazer com a opção marcada.', 'fa-triangle-exclamation');
         return;
       }
     }
@@ -1061,12 +1113,12 @@
     const priceVal = document.getElementById('prop-price').value.trim();
 
     const metersVal = document.getElementById('prop-meters').value.trim();
-    const roomsVal = document.getElementById('prop-rooms').value.trim();
-    const bathsVal = document.getElementById('prop-baths').value.trim();
-    const kitchensVal = document.getElementById('prop-kitchens').value.trim();
-    const garageVal = document.getElementById('prop-garage').value.trim() || '0';
-    const sunVal = document.getElementById('prop-sun').value || 'Lado do Sol';
-    const yardVal = document.getElementById('prop-yard').value;
+    const roomsVal = document.getElementById('prop-rooms').value;
+    const livingRoomsVal = document.getElementById('prop-livingrooms').value;
+    const bathsVal = document.getElementById('prop-baths').value;
+    const kitchensVal = document.getElementById('prop-kitchens').value;
+    const sunVal = document.getElementById('prop-sun').value;
+    const descriptionVal = document.getElementById('prop-description').value.trim();
 
     const formattedPrice = `${currencySymbol} ${priceVal}`;
     
@@ -1092,7 +1144,8 @@
       typeLabel: typeLabel,
       priceLabel: priceLabel,
       price: formattedPrice,
-      meters: `${metersVal} m²`,
+      meters: metersVal || 'Não informado',
+      description: descriptionVal,
       address: address,
       houseNumber: houseNumber,
       reference: reference,
@@ -1106,16 +1159,14 @@
         quartos: roomsVal,
         banheiros: bathsVal,
         cozinhas: kitchensVal,
-        garagem: `${garageVal} Vaga(s)`,
-        servico: 'Área de Serviço',
-        quintal: yardVal,
+        salas: livingRoomsVal,
         sol: sunVal
       },
       photos: [...uploadedPhotos]
     };
 
     const embeddedPhotoBytes = newProperty.photos.filter(src => src.startsWith('data:image')).reduce((sum, src) => sum + src.length, 0);
-    if (embeddedPhotoBytes > 720000) { showToast('Fotos muito grandes', 'Reduza a quantidade de fotos ou use URLs de imagem para manter o anúncio dentro do limite gratuito do banco.', 'fa-image'); return; }
+    if (embeddedPhotoBytes > 720000) { showToast('Fotos excedem o limite do banco', 'Não há limite fixo de quantidade, mas fotos enviadas do aparelho precisam caber no limite do Firestore. Comprima as imagens ou adicione fotos por URL.', 'fa-image'); return; }
     try { await window.firebaseBridge.saveProperty(newProperty); }
     catch (err) { console.error('Erro salvando imóvel:', err); showToast('Não foi possível publicar', window.firebaseBridge?.friendlyError(err) || 'Confira a conexão e as regras do Firestore.', 'fa-triangle-exclamation'); return; }
     propertyList.unshift(newProperty);
@@ -1142,19 +1193,23 @@
     document.getElementById('property-form').reset();
     uploadedPhotos = [];
     renderUploadedPhotosGrid();
-    selectSunPosition('Lado do Sol');
+    selectSunPosition('');
+    document.getElementById('prop-lot-optional').checked = false;
+    updateLotOptions();
     
     closeModal();
     showToast('Publicado com Sucesso!', 'Seu imóvel foi adicionado e está em destaque.', 'fa-circle-check');
     showMainView('#destaque');
   }
 
+  window.deleteProperty = deleteProperty;
+  window.updateLotOptions = updateLotOptions;
   window.checkEmailVerification = checkEmailVerification;
   window.resendEmailVerification = resendEmailVerification;
   window.toggleAuthMode = toggleAuthMode;
 
   // Init page; Firebase restores the session and loads cloud content.
   window.addEventListener('DOMContentLoaded', () => {
-    updateAuthUI(); updateFeaturedUI(); renderPropertiesVitrine();
+    populateRoomSelectors(); updateLotOptions(); updateAuthUI(); updateFeaturedUI(); renderPropertiesVitrine();
     if (window.firebaseBridgeReady) window.firebaseBridgeReady.then(() => window.firebaseBridge.startAuthListener(applyFirebaseUser)).catch(err => { console.error('Firebase não iniciou:', err); showToast('Firebase', 'Não foi possível iniciar o Firebase. Confira a configuração e a hospedagem.', 'fa-triangle-exclamation'); });
   });

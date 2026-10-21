@@ -1,12 +1,15 @@
 OPENWORD — AJUSTES DE RESPONSIVIDADE
 
-Esta versão parte do ZIP OpenWord-login-cadastro.zip e inclui refinamentos de CSS para telas estreitas, tablets, desktop, orientação horizontal, diálogos, formulários, imagens e conteúdo longo. A paleta, as imagens e a estrutura visual existentes foram preservadas. A configuração viewport foi ajustada para respeitar o zoom de acessibilidade e áreas seguras de celulares.
+Este pacote inclui reforços de layout para celulares estreitos (a partir de 320 px), celulares maiores, tablets, notebooks, monitores grandes e TVs/monitores ultrawide. Os ajustes tratam de quebra de textos, largura de formulários e cartões, navegação, menus, imagens, prévias de fotos, modais e rolagem em telas baixas ou na horizontal.
 
-COMO PUBLICAR
-1. Extraia o ZIP.
-2. Envie/substitua os arquivos mantendo os caminhos: index.html, css/styles.css, js/app.js, js/firebase.js e firestore.rules.
-3. Faça commit no repositório GitHub Pages.
-4. Aguarde a publicação e teste com Ctrl+F5.
+COMO ATUALIZAR
+1. Faça uma cópia de segurança do repositório atual.
+2. Extraia este ZIP mantendo a estrutura de pastas.
+3. Substitua os arquivos correspondentes no GitHub, preservando as pastas css e js.
+4. Faça commit/push e aguarde o GitHub Pages publicar.
+5. Abra o site e atualize com Ctrl+F5. Em celular, feche e reabra a página ou limpe o cache se necessário.
 
-IMPORTANTE
-Os ajustes melhoram a adaptação por CSS, mas não é possível garantir compatibilidade perfeita em literalmente todos os aparelhos sem testes reais em vários navegadores e tamanhos. Teste no mínimo 320px, 360px, 390px, tablet e desktop, incluindo cadastro/login, modal de anúncio, fotos e menus.
+OBSERVAÇÃO IMPORTANTE
+O layout foi reforçado por CSS e a sintaxe dos scripts foi verificada. Responsividade absoluta em todos os aparelhos não pode ser garantida sem testar os navegadores e tamanhos reais; telas, zoom, fontes do sistema, extensões e navegadores diferentes podem alterar a apresentação. Teste pelo menos em 320/360 px, 390/430 px, tablet vertical/horizontal, notebook, desktop e TV 1920 px ou superior.
+
+O arquivo firestore.rules continua incluído no pacote, mas alterações de CSS não publicam regras no Firebase. As regras precisam ser publicadas separadamente no console do Firebase quando houver mudanças nelas.

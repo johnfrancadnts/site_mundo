@@ -232,8 +232,8 @@
 <div class="text-xl sm:text-3xl font-extrabold text-neon" id="featured-price">R$ 0,00</div>
 </div>
 <div class="text-right">
-<span class="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 font-medium">Área total</span>
-<div class="text-base sm:text-xl font-bold text-white" id="featured-meters">0 m²</div>
+<span class="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 font-medium">Lote</span>
+<div class="text-base sm:text-xl font-bold text-white" id="featured-meters">Não informado</div>
 </div>
 </div>
 <!-- Room Grid: 2 colunas responsivas perfeitas -->
@@ -243,25 +243,18 @@
 <span id="feat-quartos"><strong>0</strong> Quartos</span>
 </div>
 <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-900/60 border border-slate-800">
+<i class="fa-solid fa-couch text-neon w-4 text-center"></i>
+<span id="feat-salas"><strong>0</strong> Salas</span>
+</div>
+<div class="flex items-center gap-2 p-2 rounded-xl bg-slate-900/60 border border-slate-800">
 <i class="fa-solid fa-bath text-neon w-4 text-center"></i>
 <span id="feat-banheiros"><strong>0</strong> Banheiros</span>
 </div>
 <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-900/60 border border-slate-800">
 <i class="fa-solid fa-utensils text-neon w-4 text-center"></i>
-<span id="feat-cozinha"><strong>0</strong> Cozinha</span>
+<span id="feat-cozinha"><strong>0</strong> Cozinha(s)</span>
 </div>
-<div class="flex items-center gap-2 p-2 rounded-xl bg-slate-900/60 border border-slate-800">
-<i class="fa-solid fa-jug-detergent text-neon w-4 text-center"></i>
-<span id="feat-servico">Área de Serviço</span>
-</div>
-<div class="flex items-center gap-2 p-2 rounded-xl bg-slate-900/60 border border-slate-800">
-<i class="fa-solid fa-tree text-neon w-4 text-center"></i>
-<span id="feat-quintal">Quintal</span>
-</div>
-<div class="flex items-center gap-2 p-2 rounded-xl bg-slate-900/60 border border-slate-800">
-<i class="fa-solid fa-car text-neon w-4 text-center"></i>
-<span id="feat-garagem"><strong>0</strong> Vagas</span>
-</div>
+
 <div class="col-span-2 flex flex-col gap-1 p-2 rounded-xl bg-slate-900/60 border border-slate-800">
 <div class="flex items-center gap-2">
 <span id="feat-sol-icon"><i class="fa-solid fa-sun text-yellow-400 w-4 text-center"></i></span>
@@ -269,6 +262,7 @@
 </div>
 <span class="text-[11px] sm:text-xs text-slate-300 break-words" id="featured-address-badge"><i class="fa-solid fa-location-dot text-neon mr-1"></i> Endereço</span>
 <span class="text-[10px] sm:text-[11px] text-cyan-300/80 hidden" id="featured-ref-badge"><i class="fa-solid fa-compass mr-1"></i> Ponto de ref: <span></span></span>
+<div id="featured-description-wrap" class="hidden col-span-2 mt-2 p-3 rounded-xl bg-slate-900/60 border border-slate-800"><div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Informações da casa mais detalhadas</div><p id="featured-description" class="text-xs sm:text-sm text-slate-200 whitespace-pre-line break-words"></p></div>
 </div>
 </div>
 <!-- Metadata -->
@@ -278,8 +272,8 @@
 </div>
 </div>
 <!-- Action CTA -->
-<a class="w-full py-2.5 sm:py-3 rounded-xl border border-neon/50 text-neon hover:bg-neon hover:text-black font-bold text-xs sm:text-sm tracking-wide transition flex items-center justify-center gap-2 text-center" href="#vitrine-section">
-<i class="fa-solid fa-arrows-down-to-line"></i> Explorar Mais Imóveis Publicados
+<a class="w-full py-2.5 sm:py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs sm:text-sm tracking-wide transition flex items-center justify-center gap-2 text-center" href="#" id="featured-contact-btn" target="_blank" rel="noopener noreferrer">
+<i class="fa-brands fa-whatsapp text-base"></i> ENTRAR EM CONTATO
             </a>
 </div>
 </div>
@@ -617,7 +611,8 @@
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
 <div>
 <label class="block text-xs font-semibold text-slate-300 mb-1">Finalidade <span class="text-neon">*</span></label>
-<select class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-neon min-h-[42px]" id="prop-type" onchange="updatePriceLabelByType()" required="">
+<select class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-neon min-h-[42px]" id="prop-type" onchange="updatePriceLabelByType(); updateLotOptions()" required>
+<option value="" selected disabled>Selecione a finalidade</option>
 <option value="aluguel">Aluguel (Azul)</option>
 <option value="venda">Venda (Verde Neon)</option>
 <option value="lazer">Área de Lazer (Amarelo)</option>
@@ -638,51 +633,45 @@
 <input class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-neon font-mono min-h-[42px]" id="prop-price" oninput="handlePriceMask(this)" placeholder="0,00" required="" type="text"/>
 </div>
 </div>
-<!-- Área e Cômodos (2 cols no mobile / 4 cols em tela maior) -->
+<!-- Lote e cômodos -->
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-<div>
-<label class="block text-xs font-semibold text-slate-300 mb-1">Área (m²) <span class="text-neon">*</span></label>
-<input class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-2.5 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-neon min-h-[42px]" id="prop-meters" min="1" placeholder="Ex: 150" required="" type="number"/>
+<div class="col-span-2">
+<label class="block text-xs font-semibold text-slate-300 mb-1">Lote <span class="text-neon" id="lot-required-mark">*</span></label>
+<input class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-2.5 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-neon min-h-[42px]" id="prop-meters" placeholder="Ex: 10x20" required />
+<label class="flex items-center gap-2 mt-2 text-[11px] text-slate-300"><input id="prop-lot-optional" type="checkbox" class="accent-yellow-400" onchange="updateLotOptions()"/> Imóvel de lazer: não informar o tamanho do lote</label>
 </div>
 <div>
 <label class="block text-xs font-semibold text-slate-300 mb-1">Quartos <span class="text-neon">*</span></label>
-<input class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-2.5 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-neon min-h-[42px]" id="prop-rooms" max="20" min="0" placeholder="Ex: 3" required="" type="number"/>
+<select class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-2.5 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-neon min-h-[42px]" id="prop-rooms" required><option value="" selected disabled>Selecione</option></select>
 </div>
 <div>
-<label class="block text-xs font-semibold text-slate-300 mb-1">Banheiros <span class="text-neon">*</span></label>
-<input class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-2.5 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-neon min-h-[42px]" id="prop-baths" max="20" min="0" placeholder="Ex: 2" required="" type="number"/>
+<label class="block text-xs font-semibold text-slate-300 mb-1">Salas <span class="text-neon">*</span></label>
+<select class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-2.5 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-neon min-h-[42px]" id="prop-livingrooms" required><option value="" selected disabled>Selecione</option></select>
 </div>
 <div>
 <label class="block text-xs font-semibold text-slate-300 mb-1">Cozinhas <span class="text-neon">*</span></label>
-<input class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-2.5 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-neon min-h-[42px]" id="prop-kitchens" max="10" min="0" placeholder="Ex: 1" required="" type="number"/>
+<select class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-2.5 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-neon min-h-[42px]" id="prop-kitchens" required><option value="" selected disabled>Selecione</option></select>
 </div>
-</div>
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
 <div>
-<label class="block text-xs font-semibold text-slate-300 mb-1">Vagas de Garagem</label>
-<input class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-neon min-h-[42px]" id="prop-garage" min="0" placeholder="Ex: 2" type="number"/>
+<label class="block text-xs font-semibold text-slate-300 mb-1">Banheiros <span class="text-neon">*</span></label>
+<select class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-2.5 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-neon min-h-[42px]" id="prop-baths" required><option value="" selected disabled>Selecione</option></select>
 </div>
 <!-- POSIÇÃO SOLAR: 2 OPÇÕES STRICT -->
 <div>
 <label class="block text-xs font-semibold text-slate-300 mb-1">Posição Solar <span class="text-neon">*</span></label>
 <div class="grid grid-cols-2 gap-1.5">
-<button class="sun-choice-btn py-2 px-1.5 rounded-xl border border-neon bg-neon/15 text-neon text-[11px] font-bold flex items-center justify-center gap-1 transition min-h-[42px]" id="sun-btn-sol" onclick="selectSunPosition('Lado do Sol')" type="button">
+<button class="sun-choice-btn py-2 px-1.5 rounded-xl border border-slate-700 bg-slate-900/80 text-slate-400 text-[11px] font-semibold flex items-center justify-center gap-1 transition min-h-[42px]" id="sun-btn-sol" onclick="selectSunPosition('Lado do Sol')" type="button">
 <i class="fa-solid fa-sun text-yellow-400"></i> Sol
               </button>
 <button class="sun-choice-btn py-2 px-1.5 rounded-xl border border-slate-700 bg-slate-900/80 text-slate-400 text-[11px] font-semibold flex items-center justify-center gap-1 hover:border-slate-500 transition min-h-[42px]" id="sun-btn-sombra" onclick="selectSunPosition('Lado da Sombra')" type="button">
 <i class="fa-solid fa-cloud-sun text-cyan-300"></i> Sombra
               </button>
 </div>
-<input id="prop-sun" type="hidden" value="Lado do Sol"/>
+<input id="prop-sun" type="hidden" value=""/>
 </div>
-<div>
-<label class="block text-xs font-semibold text-slate-300 mb-1">Área Externa</label>
-<select class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-neon min-h-[42px]" id="prop-yard">
-<option value="Quintal Amplo">Quintal Amplo</option>
-<option value="Varanda Gourmet">Varanda Gourmet</option>
-<option value="Terraço Panorâmico">Terraço Panorâmico</option>
-<option value="Sem quintal">Sem quintal</option>
-</select>
+<div class="sm:col-span-3">
+<label class="block text-xs font-semibold text-slate-300 mb-1">Informações da casa mais detalhadas</label>
+<textarea class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-neon min-h-[100px]" id="prop-description" placeholder="Escreva aqui detalhes, diferenciais e outras informações do imóvel..."></textarea>
 </div>
 </div>
 <div class="pt-3 flex items-center justify-between gap-2">
