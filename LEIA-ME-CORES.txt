@@ -1,0 +1,13 @@
+OPENWORD — CORES ORIGINAIS + LOGO SUPERIOR SUAVE
+
+Esta versão restaura a paleta neon original do site em botões, filtros, destaques, ícones, bordas, sombras e estados de interação. A palavra “Word” apenas na logo do canto superior esquerdo mantém o verde suave sem neon.
+
+As alterações de funcionalidades foram preservadas: publicação dos imóveis, cadastro/login, perfil, anúncios próprios com opção de apagar, responsividade e regras do Firestore.
+
+PARA PUBLICAR:
+1. Extraia o ZIP.
+2. Substitua os arquivos correspondentes no repositório GitHub, mantendo as pastas css e js.
+3. Faça o commit e aguarde o GitHub Pages atualizar.
+4. No navegador, use Ctrl+F5 para limpar o cache da página.
+
+IMPORTANTE: o arquivo firestore.rules só atualiza as regras do Firebase quando publicado manualmente no console do Firestore. A exclusão de imóveis deve ser testada com uma conta real após a publicação.
