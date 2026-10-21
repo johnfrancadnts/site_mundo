@@ -253,3 +253,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 @media (prefers-reduced-motion: reduce) {
   #properties-slider { scroll-behavior: auto; }
 }
+
+
+/* Somente a marca usa o verde suave; o restante do site mantém a paleta original. */
+.ow-logo-accent { color: #79b9a5 !important; }
