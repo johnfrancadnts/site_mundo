@@ -102,14 +102,11 @@
           <div>
             <h4 class="font-bold text-white text-xs truncate">${prop.title}</h4>
             <p class="text-[11px] text-slate-400 truncate mt-0.5">${prop.address}</p>
-            <div class="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-slate-800">
+            <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-800">
               <span class="text-xs font-black" style="color:${cfg.color}">${prop.price}</span>
-              <div class="flex items-center gap-2">
-                <button onclick="showMainView('#destaque'); setAsFeatured('${prop.id}')" class="text-[10px] text-neon hover:underline font-bold">
-                  Ver Destaque <i class="fa-solid fa-arrow-right"></i>
-                </button>
-                ${currentUser.isLoggedIn && prop.ownerId === currentUser.uid ? `<button onclick="deleteProperty('${prop.id}')" class="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg border border-red-900/70 bg-red-950/50 text-red-300 hover:bg-red-700 hover:text-white text-[10px] font-bold transition" title="Apagar este imóvel"><i class="fa-solid fa-trash"></i> Apagar</button>` : ''}
-              </div>
+              <button onclick="showMainView('#destaque'); setAsFeatured('${prop.id}')" class="text-[10px] text-neon hover:underline font-bold">
+                Ver Destaque <i class="fa-solid fa-arrow-right"></i>
+              </button>
             </div>
           </div>
         `;
@@ -952,10 +949,6 @@
       if (currentFeatured?.id === propId) currentFeatured = propertyList[0] || null;
       renderPropertiesVitrine();
       updateFeaturedUI();
-      // Se a pessoa estiver na página do perfil, atualiza a lista e a contagem sem sair dela.
-      if (currentViewedOwner && !document.getElementById('view-profile').classList.contains('hidden')) {
-        showOwnerProfile(currentViewedOwner);
-      }
       showToast('Anúncio apagado', 'Seu imóvel foi removido da plataforma.', 'fa-trash');
     } catch (err) {
       console.error('Erro apagando anúncio:', err);
