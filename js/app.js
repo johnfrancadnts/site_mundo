@@ -820,14 +820,45 @@
     openLightbox(currentFeatured.photos[featuredPhotoIndex], currentFeatured.title);
   }
 
+  let lightboxPhotos = [];
+  let lightboxIndex = 0;
+  let lightboxTitle = '';
+
   function openLightbox(imgSrc, title) {
-    const modal = document.getElementById('lightbox-modal');
+    lightboxPhotos = [imgSrc];
+    lightboxIndex = 0;
+    lightboxTitle = title || 'Visualização em Alta Definição';
+    updateLightboxImage();
+    document.getElementById('lightbox-modal').classList.remove('hidden');
+  }
+
+  function openPropertyLightbox(propId, index = 0) {
+    const prop = propertyList.find(item => item.id === propId);
+    if (!prop || !Array.isArray(prop.photos) || !prop.photos.length) return;
+    lightboxPhotos = prop.photos.filter(Boolean);
+    lightboxIndex = Math.max(0, Math.min(index, lightboxPhotos.length - 1));
+    lightboxTitle = prop.title || 'Imóvel';
+    updateLightboxImage();
+    document.getElementById('lightbox-modal').classList.remove('hidden');
+  }
+
+  function updateLightboxImage() {
     const img = document.getElementById('lightbox-img');
     const caption = document.getElementById('lightbox-caption');
-    img.src = imgSrc;
-    caption.textContent = title || 'Visualização em Alta Definição';
-    modal.classList.remove('hidden');
+    if (!lightboxPhotos.length) return;
+    img.src = lightboxPhotos[lightboxIndex];
+    caption.textContent = `${lightboxTitle} • Foto ${lightboxIndex + 1} de ${lightboxPhotos.length}`;
+    const controls = document.getElementById('lightbox-photo-controls');
+    if (controls) controls.classList.toggle('hidden', lightboxPhotos.length < 2);
   }
+
+  function changeLightboxPhoto(direction) {
+    if (lightboxPhotos.length < 2) return;
+    lightboxIndex = (lightboxIndex + direction + lightboxPhotos.length) % lightboxPhotos.length;
+    updateLightboxImage();
+  }
+  window.openPropertyLightbox = openPropertyLightbox;
+  window.changeLightboxPhoto = changeLightboxPhoto;
 
   function closeLightbox() {
     document.getElementById('lightbox-modal').classList.add('hidden');
@@ -868,7 +899,7 @@
     const grid = document.getElementById('plan-featured-slider');
     const empty = document.getElementById('plan-featured-empty');
     if (!grid || !empty) return;
-    const featured = propertyList.filter(isPlanActive).sort((a,b) => {
+    const featured = propertyList.filter(p => isPlanActive(p) && (activeFilter === 'todos' || p.type === activeFilter)).sort((a,b) => {
       const pa = testPlanConfig[a.planId]?.priority || 0;
       const pb = testPlanConfig[b.planId]?.priority || 0;
       if (pb !== pa) return pb - pa;
@@ -876,12 +907,14 @@
     });
     grid.innerHTML = '';
     document.getElementById('plan-featured-count').textContent = `${featured.length} anúncio${featured.length===1?'':'s'} com plano`;
+    const totalPlanFeatured = propertyList.filter(isPlanActive).length;
     const scrollInfo = document.getElementById('plan-featured-scroll-info');
     if (scrollInfo) scrollInfo.textContent = `${featured.length} anúncio${featured.length===1?'':'s'} com plano ativo`;
+    const planCountBadge = document.getElementById('plan-featured-count');
+    if (planCountBadge) planCountBadge.title = `Mostrando ${featured.length} de ${totalPlanFeatured} anúncios com plano conforme o filtro selecionado`;
     empty.classList.toggle('hidden', featured.length > 0);
     featured.forEach(prop => {
       const cfg = typeConfig[prop.type] || typeConfig.aluguel;
-      const priorityLabel = prop.planId === 'agency' ? 'IMOBILIÁRIA • PRIORIDADE MÁXIMA' : 'PRO • EM DESTAQUE';
       const card = document.createElement('article');
       // Shared card dimensions and layout with the regular feed.
       card.className = 'property-feed-card w-[260px] xs:w-[285px] sm:w-[340px] shrink-0 bg-cardnavy/95 border border-yellow-500/40 hover:border-neon/70 rounded-2xl p-3 sm:p-4 shadow-xl transition-all duration-300 flex flex-col justify-between group min-w-0';
@@ -894,9 +927,9 @@
       const rooms = prop.rooms || {};
       card.innerHTML = `
         <div class="property-photo-frame relative w-full h-40 sm:h-48 rounded-xl overflow-hidden bg-black/60 flex items-center justify-center">
-          <img src="${firstPhoto}" alt="${safeTitle}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" onclick="setAsFeatured('${prop.id}')">
-          <span class="absolute top-2 left-2 text-[9px] sm:text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-md bg-yellow-400 text-slate-950">${priorityLabel}</span>
-          <button class="absolute top-2 right-2 w-7 h-7 rounded-full bg-darknavy/80 hover:bg-neon hover:text-darknavy text-white flex items-center justify-center transition" onclick="setAsFeatured('${prop.id}')" title="Ver imóvel"><i class="fa-solid fa-magnifying-glass-plus text-[10px]"></i></button>
+          <img src="${firstPhoto}" alt="${safeTitle}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" onclick="openPropertyLightbox('${prop.id}', 0)">
+          <span class="absolute top-2 left-2 text-[9px] sm:text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-md" style="background:${cfg.bg}; color:${cfg.color}; border:1px solid ${cfg.border}">${prop.typeLabel || (prop.type === 'venda' ? 'VENDA' : prop.type === 'lazer' ? 'ÁREA DE LAZER' : 'ALUGUEL')}</span>
+          <button class="absolute top-2 right-2 w-7 h-7 rounded-full bg-darknavy/80 hover:bg-neon hover:text-darknavy text-white flex items-center justify-center transition" onclick="openPropertyLightbox('${prop.id}', 0)" title="Ampliar foto"><i class="fa-solid fa-magnifying-glass-plus text-[10px]"></i></button>
           <span class="absolute bottom-2 right-2 text-[10px] bg-black/75 px-1.5 py-0.5 rounded text-slate-300"><i class="fa-solid fa-camera mr-0.5"></i> ${Array.isArray(prop.photos)?prop.photos.length:0} fotos</span>
         </div>
         <div class="pt-2.5 flex-grow flex flex-col justify-between min-w-0">
@@ -1007,11 +1040,11 @@
       
       card.innerHTML = `
         <div class="property-photo-frame relative w-full h-40 sm:h-48 rounded-xl overflow-hidden bg-black/60 flex items-center justify-center">
-          <img src="${prop.photos[0]}" alt="${prop.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" onclick="openLightbox('${prop.photos[0]}', '${prop.title}')">
+          <img src="${prop.photos[0]}" alt="${prop.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" onclick="openPropertyLightbox('${prop.id}', 0)">
           <span class="absolute top-2 left-2 text-[9px] sm:text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-md" style="background:${cfg.bg}; color:${cfg.color}; border: 1px solid ${cfg.border}; backdrop-filter: blur(4px);">
             ${prop.typeLabel}
           </span>
-          <button class="absolute top-2 right-2 w-7 h-7 rounded-full bg-darknavy/80 hover:bg-neon hover:text-darknavy text-white flex items-center justify-center transition" onclick="openLightbox('${prop.photos[0]}', '${prop.title}')" title="Ampliar Foto">
+          <button class="absolute top-2 right-2 w-7 h-7 rounded-full bg-darknavy/80 hover:bg-neon hover:text-darknavy text-white flex items-center justify-center transition" onclick="openPropertyLightbox('${prop.id}', 0)" title="Ampliar Foto">
             <i class="fa-solid fa-magnifying-glass-plus text-[10px]"></i>
           </button>
           <span class="absolute bottom-2 right-2 text-[10px] bg-black/75 px-1.5 py-0.5 rounded text-slate-300">

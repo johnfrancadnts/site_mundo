@@ -829,7 +829,11 @@
 <button class="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 text-white hover:text-neon text-2xl sm:text-3xl transition z-10 w-9 h-9 rounded-full bg-darknavy/70 flex items-center justify-center" onclick="closeLightbox()">
 <i class="fa-solid fa-xmark"></i>
 </button>
-<div class="max-w-5xl max-h-[85vh] flex flex-col items-center justify-center w-full">
+<div class="max-w-5xl max-h-[85vh] flex flex-col items-center justify-center w-full relative">
+<div id="lightbox-photo-controls" class="hidden absolute inset-x-0 top-1/2 -translate-y-1/2 z-20 flex items-center justify-between px-1 sm:px-3 pointer-events-none">
+<button type="button" onclick="changeLightboxPhoto(-1)" aria-label="Foto anterior" class="pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-darknavy/85 border border-white/30 text-white hover:bg-neon hover:text-darknavy flex items-center justify-center shadow-lg"><i class="fa-solid fa-chevron-left"></i></button>
+<button type="button" onclick="changeLightboxPhoto(1)" aria-label="Próxima foto" class="pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-darknavy/85 border border-white/30 text-white hover:bg-neon hover:text-darknavy flex items-center justify-center shadow-lg"><i class="fa-solid fa-chevron-right"></i></button>
+</div>
 <img alt="Ampliação do Imóvel" class="max-h-[75vh] sm:max-h-[80vh] max-w-full rounded-2xl object-contain border border-neon/50 shadow-neon-lg" id="lightbox-img" src=""/>
 <p class="text-slate-300 text-xs mt-2.5 tracking-wide text-center" id="lightbox-caption">Foto em Alta Definição</p>
 </div>
