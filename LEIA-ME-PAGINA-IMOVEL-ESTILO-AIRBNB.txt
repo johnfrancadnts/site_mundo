@@ -1,0 +1,20 @@
+OPENWORD — PÁGINA DE DETALHES INSPIRADA NO PADRÃO DE ANÚNCIO DO AIRBNB
+
+O que mudou nesta versão:
+- Página exclusiva do imóvel reorganizada com título, finalidade, endereço e código no topo.
+- Galeria de fotos em mosaico no desktop e galeria responsiva no celular.
+- Botão para mostrar todas as fotos e visualizador ampliado com setas, miniaturas e tecla Esc.
+- Informações do imóvel organizadas em seções: anunciante, características, descrição, comodidades de lazer e localização.
+- Cartão lateral com preço, lote, contato pelo WhatsApp e rota do Google Maps; no celular, o conteúdo fica em uma coluna.
+- Mantém o tema escuro/neon do OpenWord e utiliza os dados já carregados pelo Firebase.
+
+Instalação:
+1. Faça backup do repositório atual.
+2. Substitua imovel.html e js/property-detail.js pelos arquivos deste pacote.
+3. Mantenha index.html, css/styles.css, js/app.js, js/firebase.js e firestore.rules existentes.
+4. Publique o commit no GitHub Pages.
+5. Teste anúncios com várias fotos, sem fotos, endereço completo e comodidades de lazer.
+
+Nota:
+O botão Traçar rota envia para o Google Maps o endereço salvo no anúncio. Não é possível garantir localização exata se o anunciante não cadastrou endereço/número/bairro/cidade corretamente.
+O layout foi verificado por sintaxe JavaScript e estrutura do ZIP, mas precisa de validação visual no site publicado e em dispositivos reais.

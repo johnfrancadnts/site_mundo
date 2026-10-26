@@ -1,0 +1,14 @@
+OPENWORD — PÁGINA DO IMÓVEL COM A PALETA ORIGINAL
+
+A página individual do imóvel mantém o modelo de organização inspirado em páginas de anúncio imobiliário: título e endereço, galeria de fotos, informações do anunciante, características, descrição, localização e painel lateral de preço/contato.
+
+As cores foram alinhadas à identidade visual já usada no OpenWord:
+- fundo azul-marinho muito escuro (#040c16);
+- painéis escuros (#050f1a);
+- bordas azul-marinho (#0d283f);
+- verde neon original (#00e6a8) nos botões e destaques;
+- verde suave (#79b9a5) apenas no trecho “Word” da logo, seguindo o site.
+
+Não é uma cópia exata do Airbnb. A referência foi usada para a organização da página, enquanto a paleta e a identidade visual continuam sendo as do OpenWord.
+
+Para publicar, substitua no repositório os arquivos imovel.html e js/property-detail.js pelos desta versão. Os demais arquivos do projeto foram incluídos no ZIP para facilitar a implantação. Não altere as regras do Firestore se não for necessário.
