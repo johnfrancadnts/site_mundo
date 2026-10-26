@@ -1,0 +1,9 @@
+OPENWORD — VITRINES UNIFICADAS
+
+- A seção de anúncios com planos/temporários agora usa cartões com as mesmas dimensões, estrutura visual, proporção de fotos, informações, botões e rodapé do feed normal.
+- As duas seções usam rolagem horizontal com snap e controles Anterior/Próximo.
+- Em celulares os cartões usam largura proporcional à tela; em tablets e computadores mantêm largura consistente.
+- A ordem por prioridade dos planos foi preservada (Imobiliária antes de PRO).
+- A lógica de anúncios sem plano, login, contato, exclusão e período de teste foi preservada.
+
+Testes realizados: verificação sintática dos scripts JavaScript e integridade do ZIP. Ainda é necessário validar visualmente no navegador e no Firebase publicado.

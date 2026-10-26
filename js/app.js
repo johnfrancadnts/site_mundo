@@ -858,6 +858,12 @@
     return prop.planPaymentStatus === 'paid' && prop.planStatus === 'active' && Number.isFinite(expiry) && expiry > Date.now();
   }
 
+  function scrollPlanCarousel(direction) {
+    const slider = document.getElementById('plan-featured-slider');
+    if (slider) slider.scrollBy({ left: direction * Math.max(280, slider.clientWidth * 0.82), behavior: 'smooth' });
+  }
+  window.scrollPlanCarousel = scrollPlanCarousel;
+
   function renderPlanFeatured() {
     const grid = document.getElementById('plan-featured-slider');
     const empty = document.getElementById('plan-featured-empty');
@@ -866,27 +872,57 @@
       const pa = testPlanConfig[a.planId]?.priority || 0;
       const pb = testPlanConfig[b.planId]?.priority || 0;
       if (pb !== pa) return pb - pa;
-      const ea = getPlanExpiry(a) || 0;
-      const eb = getPlanExpiry(b) || 0;
-      return eb - ea;
+      return (getPlanExpiry(b) || 0) - (getPlanExpiry(a) || 0);
     });
     grid.innerHTML = '';
     document.getElementById('plan-featured-count').textContent = `${featured.length} anúncio${featured.length===1?'':'s'} com plano`;
+    const scrollInfo = document.getElementById('plan-featured-scroll-info');
+    if (scrollInfo) scrollInfo.textContent = `${featured.length} anúncio${featured.length===1?'':'s'} com plano ativo`;
     empty.classList.toggle('hidden', featured.length > 0);
     featured.forEach(prop => {
       const cfg = typeConfig[prop.type] || typeConfig.aluguel;
       const priorityLabel = prop.planId === 'agency' ? 'IMOBILIÁRIA • PRIORIDADE MÁXIMA' : 'PRO • EM DESTAQUE';
       const card = document.createElement('article');
-      card.className = 'min-w-0 overflow-hidden rounded-2xl border border-yellow-500/40 bg-cardnavy shadow-lg flex flex-col';
-      const img = document.createElement('img'); img.src = prop.photos?.[0] || ''; img.alt = prop.title || 'Imóvel'; img.className='w-full aspect-[4/3] object-cover';
-      const imageWrap = document.createElement('div'); imageWrap.className='relative'; imageWrap.appendChild(img);
-      const badge=document.createElement('span'); badge.className='absolute top-2 left-2 rounded-full bg-yellow-400 text-slate-950 px-2 py-1 text-[9px] font-black'; badge.textContent=priorityLabel; imageWrap.appendChild(badge);
-      const body=document.createElement('div'); body.className='p-3 flex flex-col flex-1 min-w-0';
-      const title=document.createElement('h3'); title.className='text-sm font-extrabold text-white break-words'; title.textContent=prop.title || 'Imóvel';
-      const address=document.createElement('p'); address.className='text-[11px] text-slate-400 mt-1 break-words'; address.textContent=prop.address || '';
-      const price=document.createElement('p'); price.className='text-base font-black mt-2'; price.style.color=cfg.color; price.textContent=prop.price || '';
-      const btn=document.createElement('button'); btn.className='mt-3 w-full rounded-xl bg-neon text-slate-950 font-bold text-xs p-2.5'; btn.textContent='Ver imóvel'; btn.onclick=()=>{setAsFeatured(prop.id);};
-      body.append(title,address,price,btn); card.append(imageWrap,body); grid.appendChild(card);
+      // Shared card dimensions and layout with the regular feed.
+      card.className = 'property-feed-card w-[260px] xs:w-[285px] sm:w-[340px] shrink-0 bg-cardnavy/95 border border-yellow-500/40 hover:border-neon/70 rounded-2xl p-3 sm:p-4 shadow-xl transition-all duration-300 flex flex-col justify-between group min-w-0';
+      const firstPhoto = Array.isArray(prop.photos) && prop.photos.length ? prop.photos[0] : '';
+      const safeTitle = String(prop.title || 'Imóvel');
+      const cleanPhone = String(prop.ownerPhone || '').replace(/\D/g, '').replace(/^((?!55).{10,11})$/, '55$1');
+      const whatsMsg = encodeURIComponent(`Olá, vi o anúncio no OpenWord: "${safeTitle}" (${prop.price || ''}). Está disponível?`);
+      const fullDisplayAddr = `${prop.address || ''}, Nº ${prop.houseNumber || 'S/N'}`;
+      const ownerPhoto = prop.ownerPhoto || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80';
+      const rooms = prop.rooms || {};
+      card.innerHTML = `
+        <div class="property-photo-frame relative w-full h-40 sm:h-48 rounded-xl overflow-hidden bg-black/60 flex items-center justify-center">
+          <img src="${firstPhoto}" alt="${safeTitle}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" onclick="setAsFeatured('${prop.id}')">
+          <span class="absolute top-2 left-2 text-[9px] sm:text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-md bg-yellow-400 text-slate-950">${priorityLabel}</span>
+          <button class="absolute top-2 right-2 w-7 h-7 rounded-full bg-darknavy/80 hover:bg-neon hover:text-darknavy text-white flex items-center justify-center transition" onclick="setAsFeatured('${prop.id}')" title="Ver imóvel"><i class="fa-solid fa-magnifying-glass-plus text-[10px]"></i></button>
+          <span class="absolute bottom-2 right-2 text-[10px] bg-black/75 px-1.5 py-0.5 rounded text-slate-300"><i class="fa-solid fa-camera mr-0.5"></i> ${Array.isArray(prop.photos)?prop.photos.length:0} fotos</span>
+        </div>
+        <div class="pt-2.5 flex-grow flex flex-col justify-between min-w-0">
+          <div class="min-w-0">
+            <div class="flex items-baseline justify-between gap-1"><h3 class="font-extrabold text-white text-xs sm:text-sm truncate" title="${safeTitle}">${safeTitle}</h3></div>
+            <p class="text-[11px] text-slate-300 truncate mt-0.5" title="${fullDisplayAddr}"><i class="fa-solid fa-location-dot text-neon mr-1"></i> ${fullDisplayAddr}</p>
+            ${prop.reference ? `<p class="text-[10px] text-cyan-300/80 truncate mt-0.5"><i class="fa-solid fa-compass mr-1"></i> ${prop.reference}</p>` : ''}
+            <div class="mt-2 flex items-baseline justify-between gap-2 border-b border-slate-800/80 pb-1.5"><div class="min-w-0"><span class="text-[9px] uppercase text-slate-500 block">${prop.priceLabel || 'Valor'}</span><span class="text-base sm:text-lg font-black" style="color:${cfg.color}">${prop.price || 'Não informado'}</span></div><span class="text-[11px] font-semibold text-slate-300 shrink-0">${prop.meters || 'Lote não informado'}</span></div>
+            <div class="grid grid-cols-2 gap-1 py-2 text-[10px] sm:text-[11px] text-slate-300 border-b border-slate-800/60">
+              <span class="flex items-center gap-1 min-w-0"><i class="fa-solid fa-bed text-neon text-[9px]"></i> <span class="truncate">${rooms.quartos ?? '—'} quartos</span></span>
+              <span class="flex items-center gap-1 min-w-0"><i class="fa-solid fa-couch text-neon text-[9px]"></i> <span class="truncate">${rooms.salas ?? '—'} salas</span></span>
+              <span class="flex items-center gap-1 min-w-0"><i class="fa-solid fa-bath text-neon text-[9px]"></i> <span class="truncate">${rooms.banheiros ?? '—'} banheiros</span></span>
+              <span class="flex items-center gap-1 min-w-0"><i class="fa-solid fa-utensils text-neon text-[9px]"></i> <span class="truncate">${rooms.cozinhas ?? '—'} cozinhas</span></span>
+            </div>
+            <div class="py-1 text-[10px] sm:text-[11px] text-slate-400 flex items-center justify-between"><span class="truncate">${rooms.sol === 'Lado da Sombra' ? '<i class="fa-solid fa-cloud-sun text-cyan-300 mr-1"></i>' : '<i class="fa-solid fa-sun text-yellow-400 mr-1"></i>'}${rooms.sol || 'Posição solar não informada'}</span></div>
+          </div>
+          <div class="pt-2 mt-1.5 border-t border-slate-800/70">
+            <div class="flex items-center justify-between gap-1.5 cursor-pointer hover:opacity-90" onclick="showOwnerProfile({ name: '${prop.ownerName || ''}', phone: '${prop.ownerPhone || ''}', avatar: '${ownerPhoto}' })" title="Ver Perfil Profissional">
+              <div class="flex items-center gap-1.5 min-w-0"><img src="${ownerPhoto}" alt="${prop.ownerName || 'Proprietário'}" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover border border-neon shrink-0"><div class="truncate"><div class="text-[11px] font-bold text-white truncate hover:text-neon">${prop.ownerName || 'Proprietário'}</div><div class="text-[9px] text-slate-400 font-mono truncate">${prop.ownerPhone || ''}</div></div></div>
+              <a href="https://wa.me/${cleanPhone}?text=${whatsMsg}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="px-2 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-[11px] font-bold transition flex items-center gap-1 shrink-0 shadow"><i class="fa-brands fa-whatsapp text-xs"></i><span class="hidden xs:inline">WhatsApp</span></a>
+            </div>
+            <div class="mt-2 flex items-center gap-2"><button onclick="setAsFeatured('${prop.id}')" class="flex-1 py-1.5 rounded-lg bg-slate-800 hover:bg-neon hover:text-darknavy text-slate-200 text-[11px] font-bold transition border border-slate-700 hover:border-neon flex items-center justify-center gap-1"><i class="fa-solid fa-star text-yellow-400"></i> Ver no Destaque</button>${currentUser.isLoggedIn && prop.ownerId === currentUser.uid ? `<button onclick="deleteProperty('${prop.id}')" class="py-1.5 px-2 rounded-lg bg-red-950/70 hover:bg-red-600 text-red-200 text-[11px] font-bold transition border border-red-900 flex items-center justify-center gap-1" title="Apagar meu anúncio"><i class="fa-solid fa-trash"></i> Apagar</button>` : ''}</div>
+            <div class="mt-1.5 text-[9px] text-slate-500 flex items-center justify-between gap-2"><span class="truncate">Publicado ${prop.publishedAt || 'recentemente'}</span><span class="shrink-0">${prop.code || ''}</span></div>
+          </div>
+        </div>`;
+      grid.appendChild(card);
     });
   }
 

@@ -1,0 +1,12 @@
+OPENWORD — CORREÇÃO VISUAL DAS VITRINES
+
+- A vitrine de planos e o feed normal agora compartilham as mesmas regras CSS de largura, altura das fotos, espaçamento, rolagem horizontal e ajuste por largura da tela.
+- Em celulares, os dois usam um cartão com a mesma largura relativa à tela, sem o destaque ocupar uma largura diferente.
+- Em tablets e computadores, ambos usam os mesmos pontos de quebra e larguras dos cartões.
+- As imagens preenchem o quadro com object-fit: cover.
+- Mantidos ordem/prioridade dos planos, botões, dados, autenticação, Firebase e demais lógicas.
+
+PUBLICAÇÃO
+Substitua os arquivos do ZIP no repositório GitHub, publique o commit e teste com recarga forçada (Ctrl+F5). No celular, feche e reabra a página ou limpe o cache. O navegador pode continuar exibindo a versão antiga até o GitHub Pages atualizar.
+
+Verificações realizadas: sintaxe dos scripts JavaScript e integridade do arquivo ZIP. Não foi possível confirmar o resultado em todos os dispositivos nem executar teste ponta a ponta com o Firebase publicado.

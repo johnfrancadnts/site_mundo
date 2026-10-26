@@ -302,13 +302,22 @@
 <!-- END: FeaturedProperty -->
 <!-- BEGIN: FeedPlanFeaturedSection -->
 <section class="max-w-7xl mx-auto px-3 sm:px-6 mb-10 sm:mb-14" id="plan-featured-section">
-  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-4">
+  <div class="flex flex-col md:flex-row md:items-end justify-between mb-5 gap-3">
     <div><div class="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-yellow-400 mb-1"><i class="fa-solid fa-crown mr-1"></i> Anúncios com planos / temporários</div>
     <h2 class="text-lg sm:text-2xl md:text-3xl font-extrabold text-white">Imóveis em Destaque</h2>
     <p class="text-[11px] sm:text-xs text-slate-400">Anúncios com plano ativo aparecem primeiro; planos de maior prioridade ficam à frente.</p></div>
     <span class="text-[10px] text-yellow-300 bg-yellow-400/10 border border-yellow-400/30 rounded-full px-3 py-1.5 w-fit" id="plan-featured-count">0 anúncios com plano</span>
   </div>
-  <div id="plan-featured-slider" class="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4"></div>
+  <div class="relative w-full">
+    <div id="plan-featured-slider" class="flex gap-3 sm:gap-5 overflow-x-auto pb-5 pt-1 scroll-smooth no-scrollbar"></div>
+    <div class="flex items-center justify-between mt-1 text-[11px] sm:text-xs text-slate-500">
+      <span id="plan-featured-scroll-info">Anúncios com planos ativos</span>
+      <div class="flex items-center gap-2 shrink-0">
+        <button class="hover:text-neon transition" onclick="scrollPlanCarousel(-1)" aria-label="Anúncios em destaque anteriores"><i class="fa-solid fa-arrow-left mr-1"></i> Anterior</button><span>•</span>
+        <button class="hover:text-neon transition" onclick="scrollPlanCarousel(1)" aria-label="Próximos anúncios em destaque">Próximo <i class="fa-solid fa-arrow-right ml-1"></i></button>
+      </div>
+    </div>
+  </div>
   <div id="plan-featured-empty" class="rounded-2xl border border-dashed border-yellow-500/30 bg-cardnavy/30 p-5 text-center text-xs text-slate-400">Ainda não há anúncios com planos ativos. Durante os testes, entre na sua conta e acesse <strong class="text-yellow-300">Planos (modo teste)</strong> para destacar um anúncio.</div>
 </section>
 <!-- END: FeedPlanFeaturedSection -->
