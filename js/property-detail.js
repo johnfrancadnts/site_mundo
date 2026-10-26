@@ -8,6 +8,7 @@ let propertyReviews = [];
 let selectedStars = 0;
 let reviewSaving = false;
 function showError(message) { $('loading').classList.add('hidden'); $('property-page').classList.add('hidden'); $('error').classList.remove('hidden'); $('error-message').textContent = message; }
+function paintAccountState(user) { const label = $('detail-account-label'); const link = $('detail-account-link'); if (!label || !link) return; if (user) { label.textContent = (user.displayName || user.email?.split('@')[0] || 'Minha conta').split(' ')[0]; link.setAttribute('aria-label', `Minha conta: ${user.displayName || user.email || 'usuário conectado'}`); } else { label.textContent = 'Minha conta'; link.setAttribute('aria-label', 'Entrar na minha conta OpenWord'); } }
 
 function reviewDate(review) {
   const value = review.createdAt || review.updatedAt;
@@ -54,7 +55,7 @@ function paintReviewForm() {
   }
   if (!signedInUser) {
     fields.classList.add('hidden');
-    note.innerHTML = 'Para avaliar, <a href="./" target="_blank" rel="noopener noreferrer" class="neon underline font-extrabold">entre na sua conta OpenWord</a> em outra aba e depois atualize esta página.';
+    note.innerHTML = 'Para avaliar, <a href="./?openAccount=1" class="neon underline font-extrabold">entre na sua conta OpenWord</a>. Depois de entrar, volte a esta página; a sessão será reconhecida automaticamente.';
     return;
   }
   fields.classList.remove('hidden');
@@ -72,7 +73,7 @@ function paintReviewForm() {
 }
 async function submitPropertyReview() {
   if (reviewSaving) return;
-  if (!signedInUser) { $('review-auth-note').textContent = 'Entre na sua conta OpenWord em outra aba e atualize esta página para avaliar.'; return; }
+  if (!signedInUser) { $('review-auth-note').innerHTML = 'Para avaliar, <a href="./?openAccount=1" class="neon underline font-extrabold">entre na sua conta OpenWord</a> e volte a esta página.'; return; }
   if (property?.ownerId && signedInUser.uid === property.ownerId) { $('review-auth-note').textContent = 'O anunciante não pode avaliar o próprio anúncio.'; return; }
   const text = $('review-comment').value.trim();
   if (!selectedStars) { $('review-status').textContent = 'Escolha uma nota de 1 a 5 estrelas.'; return; }
@@ -147,22 +148,33 @@ document.addEventListener('keydown', e => {
 });
 (async function init() {
   try {
-    const id = new URLSearchParams(location.search).get('id');
-    if (!id) { showError('O link não contém o código do imóvel.'); return; }
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id') || params.get('imovel') || params.get('propertyId');
+    if (!id) { showError('O link deste anúncio está incompleto: não encontramos o código do imóvel. Volte à lista e abra o anúncio novamente.'); return; }
+
+    // Aguarda o Firebase restaurar a sessão antes de preparar o formulário de avaliação.
     await window.firebaseBridgeReady;
     const bridge = window.firebaseBridge;
-    const all = await bridge.loadProperties();
-    bridge.startAuthListener(user => { signedInUser = user || null; paintReviewForm(); paintReviews(); });
-    property = all.find(item => item.id === id);
+    signedInUser = await bridge.waitForAuthReady();
+    paintAccountState(signedInUser);
+    bridge.startAuthListener(user => {
+      signedInUser = user || null;
+      paintAccountState(signedInUser);
+      paintReviewForm();
+      paintReviews();
+    });
+
+    // Busca o anúncio pelo ID exato. Não depende de carregar a coleção inteira.
+    property = await bridge.getProperty(id);
+    if (!property) { showError('Este anúncio não foi encontrado no Firebase. Confirme se o anúncio ainda existe e abra-o novamente pela lista de imóveis.'); return; }
     const p = property;
-    if (!p) { showError('Este anúncio não foi encontrado. Ele pode ter sido removido.'); return; }
     const cfg = { venda:{label:'VENDA',color:'#00e6a8'}, aluguel:{label:'ALUGUEL',color:'#38bdf8'}, lazer:{label:'ÁREA DE LAZER',color:'#eab308'} }[p.type] || {label:p.typeLabel || 'IMÓVEL',color:'#00e6a8'};
     $('type-badge').innerHTML = `<i class="fa-solid fa-house"></i>${esc(p.typeLabel || cfg.label)}`; $('type-badge').style.color = cfg.color; $('type-badge').style.borderColor = cfg.color;
     $('title').textContent = p.title || 'Imóvel';
     const addr = [p.address, p.houseNumber ? `Nº ${p.houseNumber}` : '', p.neighborhood, p.city, p.state].filter(Boolean).join(', ');
     $('address').innerHTML = `<i class="fa-solid fa-location-dot neon mr-2"></i>${esc(addr || 'Endereço não informado')}`;
     $('location-summary').textContent = addr || 'Endereço não informado';
-    $('published').textContent = p.publishedAt ? `Publicado ${p.publishedAt}` : '';
+    $('published').textContent = p.publishedAt ? `Publicado ${typeof p.publishedAt === 'string' ? p.publishedAt : ''}` : '';
     $('code-pill').textContent = p.code ? `Código ${p.code}` : '';
     $('price-label').textContent = p.priceLabel || (p.type === 'venda' ? 'valor de venda' : p.type === 'lazer' ? 'por diária' : 'por mês');
     $('price').textContent = p.price || 'Valor não informado'; $('lot').textContent = p.meters || 'Não informado'; $('code').textContent = p.code || '—';
@@ -187,17 +199,33 @@ document.addEventListener('keydown', e => {
     if (!photos.length && p.photo) photos = [p.photo];
     if (!photos.length) photos = [''];
     paintGallery();
-    propertyReviews = await bridge.loadPropertyReviews(p.id);
+
+    // Falha ao ler avaliações não pode derrubar a página do anúncio inteiro.
+    try {
+      propertyReviews = await bridge.loadPropertyReviews(p.id);
+    } catch (reviewError) {
+      console.error('Não foi possível carregar avaliações. Verifique as regras do Firestore para propertyReviews:', reviewError);
+      propertyReviews = [];
+      const systemStatus = $('review-system-status');
+      if (systemStatus) { systemStatus.textContent = 'As avaliações estão temporariamente indisponíveis. Publique as regras do Firestore incluídas no pacote para ativá-las.'; systemStatus.classList.remove('hidden'); }
+    }
     paintReviews();
     paintReviewForm();
     $('owner-name').textContent = p.ownerName || 'Proprietário'; $('owner-phone').textContent = p.ownerPhone || '';
     $('owner-photo').src = p.ownerPhoto || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80';
-    const phone = String(p.ownerPhone || '').replace(/\D/g,''); const waPhone = phone.startsWith('55') ? phone : `55${phone}`;
+    const phone = String(p.ownerPhone || '').replace(/\D/g,''); const waPhone = phone ? (phone.startsWith('55') ? phone : `55${phone}`) : '';
     const message = encodeURIComponent(`Olá, vi o anúncio no OpenWord: "${p.title || 'Imóvel'}" (${p.price || 'valor não informado'}). Ainda está disponível?`);
-    $('contact').href = `https://wa.me/${waPhone}?text=${message}`;
+    $('contact').href = waPhone ? `https://wa.me/${waPhone}?text=${message}` : '#';
+    $('contact').setAttribute('aria-disabled', String(!waPhone));
+    if (!waPhone) $('contact').addEventListener('click', event => { event.preventDefault(); $('owner-phone').textContent = 'O anunciante ainda não cadastrou um WhatsApp válido.'; });
     const mapQuery = [p.address, p.houseNumber, p.neighborhood, p.city, p.state, p.cep, p.reference].filter(Boolean).join(', ');
     const mapUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapQuery || addr || p.title || '')}`;
     $('route').href = mapUrl; $('route-inline').href = mapUrl;
     $('loading').classList.add('hidden'); $('property-page').classList.remove('hidden'); document.title = `${p.title || 'Imóvel'} | OpenWord`;
-  } catch (error) { console.error('Erro ao carregar anúncio:', error); showError('Ocorreu um erro ao carregar o anúncio. Verifique sua conexão e tente novamente.'); }
+  } catch (error) {
+    console.error('Erro ao carregar anúncio:', error);
+    const bridge = window.firebaseBridge;
+    const detail = bridge?.friendlyError ? bridge.friendlyError(error) : (error?.message || 'Erro desconhecido');
+    showError(`Não foi possível carregar este anúncio. ${detail} Confira a conexão e se as regras do Firestore permitem leitura pública dos anúncios.`);
+  }
 })();

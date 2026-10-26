@@ -10,6 +10,8 @@
     reviews: []
   };
 
+  let accountDeepLinkHandled = false;
+
   // Property dataset starts clean (NO FAKE / PRESET PROPERTIES)
   let propertyList = [];
   let currentFeatured = null;
@@ -424,12 +426,26 @@
     catch (err) { showToast('Não foi possível enviar', window.firebaseBridge?.friendlyError(err) || 'Tente novamente mais tarde.', 'fa-triangle-exclamation'); }
   }
 
+  function handleAccountDeepLink() {
+    if (accountDeepLinkHandled || new URLSearchParams(window.location.search).get('openAccount') !== '1') return;
+    accountDeepLinkHandled = true;
+    // Deixa o DOM e o estado de autenticação atualizarem antes de abrir o menu.
+    setTimeout(() => {
+      if (currentUser.isLoggedIn) {
+        const dropdown = document.getElementById('account-dropdown');
+        if (dropdown) dropdown.classList.remove('hidden');
+      } else {
+        openAuthModal(false);
+      }
+    }, 120);
+  }
+
   async function applyFirebaseUser(user) {
-    if (!user) { currentUser = { isLoggedIn: false, uid: '', name: '', email: '', phone: '', avatar: '', memberSince: '' }; updateAuthUI(); await loadFirebaseContent(); return; }
+    if (!user) { currentUser = { isLoggedIn: false, uid: '', name: '', email: '', phone: '', avatar: '', memberSince: '' }; updateAuthUI(); await loadFirebaseContent(); handleAccountDeepLink(); return; }
     try {
       const profile = await window.firebaseBridge.getUserProfile(user.uid) || {};
       currentUser = { isLoggedIn: true, uid: user.uid, name: profile.name || user.displayName || (user.email || '').split('@')[0] || 'Usuário', email: user.email || '', phone: profile.phone || '', avatar: profile.avatar || user.photoURL || '', memberSince: profile.memberSince || new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(new Date()) };
-      updateAuthUI(); await loadFirebaseContent();
+      updateAuthUI(); await loadFirebaseContent(); handleAccountDeepLink();
     } catch (err) { console.error('Erro ao carregar perfil do Firebase:', err); showToast('Aviso', 'Login realizado, mas alguns dados não puderam ser carregados. Confira as regras do Firestore.', 'fa-triangle-exclamation'); }
   }
 

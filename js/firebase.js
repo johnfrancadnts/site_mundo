@@ -151,8 +151,28 @@ const bridge = {
         callback(null);
         return;
       }
-      callback(user);
+      callback(user || null);
     });
+  },
+  // Resolve somente depois que o Firebase restaurar a sessão salva neste domínio.
+  waitForAuthReady() {
+    return new Promise((resolve, reject) => {
+      let unsubscribe = () => {};
+      try {
+        unsubscribe = onAuthStateChanged(auth, user => {
+          unsubscribe();
+          resolve(user || null);
+        }, error => {
+          unsubscribe();
+          reject(error);
+        });
+      } catch (error) { reject(error); }
+    });
+  },
+  getCurrentUser() { return auth.currentUser || null; },
+  async getProperty(propertyId) {
+    const snap = await getDoc(doc(db, 'properties', propertyId));
+    return snap.exists() ? { id: snap.id, ...snap.data() } : null;
   },
   async getUserProfile(uid) {
     const snap = await getDoc(doc(db, 'users', uid));

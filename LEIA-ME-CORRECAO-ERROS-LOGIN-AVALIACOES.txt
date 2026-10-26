@@ -1,0 +1,37 @@
+OPENWORD — CORREÇÃO DA PÁGINA DO IMÓVEL, LOGIN E AVALIAÇÕES
+
+O QUE FOI CORRIGIDO
+- A página de detalhes agora busca o imóvel diretamente pelo ID do anúncio, em vez de depender de carregar toda a coleção.
+- Erro ao carregar avaliações não derruba mais a página inteira do imóvel.
+- A página espera o Firebase restaurar a sessão salva antes de montar os controles de avaliação.
+- A sessão do Firebase usa o comportamento padrão persistente do SDK, que é compartilhado entre abas do mesmo domínio quando o usuário fez login com persistência local.
+- Adicionado botão Minha conta no cabeçalho da página do imóvel. Ele abre o site principal e tenta abrir o menu da conta ou o login, conforme o estado de autenticação.
+- Melhoradas mensagens de erro e ajustes de responsividade no cabeçalho e no conteúdo em telas estreitas.
+- Avaliações continuam exigindo autenticação e o proprietário não pode avaliar o próprio anúncio.
+
+ARQUIVOS PARA PUBLICAR NO GITHUB
+Substitua os arquivos correspondentes do repositório pelos arquivos deste pacote:
+- imovel.html
+- js/property-detail.js
+- js/firebase.js
+- js/app.js
+- firestore.rules (publique estas regras no Firebase Console; não basta apenas enviar o arquivo ao GitHub)
+
+PASSO OBRIGATÓRIO NO FIREBASE
+1. Abra Firebase Console > Firestore Database > Regras.
+2. Abra o arquivo firestore.rules deste pacote e copie todo o conteúdo para a tela de regras do Firestore.
+3. Clique em Publicar.
+As regras incluem leitura pública dos anúncios e avaliações, além de exigir conta autenticada para publicar/atualizar avaliação e impedir autoavaliação pelo proprietário.
+
+COMO TESTAR
+1. Faça login em https://johnfrancadnts.github.io/site_mundo/.
+2. Abra um anúncio em outra aba pelo botão Ver imóvel.
+3. Confirme que Minha conta mostra o nome da conta conectada.
+4. Vá até Avaliações dos visitantes, escolha estrelas e escreva um comentário.
+5. Publique e recarregue a página para verificar se a avaliação permanece.
+6. Teste também em celular e em tela estreita.
+
+IMPORTANTE
+O Firebase Auth normalmente compartilha a sessão entre abas do mesmo domínio com persistência local. Se o login foi feito em outro domínio, em navegação privada, ou se o navegador bloqueia armazenamento, a sessão pode não ser compartilhada. Não altere a persistência para SESSION ou NONE, pois isso impediria a sincronização normal entre abas.
+
+Foram executadas verificações de sintaxe dos arquivos JavaScript e integridade do ZIP. Não foi possível testar a gravação real no Firebase publicado a partir deste pacote; isso depende da publicação das regras no Console e do teste no site ao vivo.
