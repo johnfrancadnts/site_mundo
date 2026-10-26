@@ -325,3 +325,25 @@ button, a { -webkit-tap-highlight-color: transparent; }
   #plan-featured-slider > article, #properties-slider > div { flex-basis:340px; width:340px; max-width:340px; }
   #plan-featured-slider > article .property-photo-frame, #properties-slider > div .property-photo-frame { height:192px; }
 }
+
+
+/* Desktop alignment fix: center both home-page vitrines in the same content column.
+   Mobile/tablet rules remain unchanged. */
+@media (min-width: 1024px) {
+  #plan-featured-section,
+  #vitrine-section {
+    width: min(calc(100% - 2 * clamp(1.25rem, 3vw, 3rem)), 1280px) !important;
+    max-width: 1280px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  #plan-featured-section .relative,
+  #vitrine-section .relative { min-width: 0; width: 100%; }
+}
+
+@media (min-width: 1920px) {
+  #plan-featured-section,
+  #vitrine-section { width: min(90vw, 1720px) !important; max-width: 1720px !important; }
+}

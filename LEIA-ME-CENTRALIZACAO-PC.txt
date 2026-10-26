@@ -1,0 +1,9 @@
+OPENWORD — AJUSTE DE CENTRALIZAÇÃO NO COMPUTADOR
+
+Esta alteração é pontual: alinha e centraliza as duas vitrines da página inicial usando a mesma coluna de conteúdo em telas de computador.
+- Imóveis em Destaque (planos/temporários)
+- Vitrine Dinâmica & Feed Completo (anúncios normais)
+
+Não altera a lógica dos planos, publicação, autenticação ou Firebase. As regras para celular e tablet foram mantidas.
+
+Para publicar, substitua os arquivos correspondentes no repositório GitHub e faça commit. Depois aguarde o GitHub Pages atualizar e recarregue com Ctrl+F5.
