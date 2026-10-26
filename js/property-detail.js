@@ -191,6 +191,11 @@ document.addEventListener('keydown', e => {
       return;
     }
     const p = property;
+    // Avaliações são exclusivas de anúncios do tipo área de lazer.
+    // Venda e aluguel não devem exibir nem carregar o formulário de avaliação.
+    const reviewsSection = $('reviews-section');
+    const isLeisureProperty = String(p.type || '').trim().toLocaleLowerCase('pt-BR') === 'lazer';
+    if (reviewsSection) reviewsSection.classList.toggle('hidden', !isLeisureProperty);
     const cfg = { venda:{label:'VENDA',color:'#00e6a8'}, aluguel:{label:'ALUGUEL',color:'#38bdf8'}, lazer:{label:'ÁREA DE LAZER',color:'#eab308'} }[p.type] || {label:p.typeLabel || 'IMÓVEL',color:'#00e6a8'};
     $('type-badge').innerHTML = `<i class="fa-solid fa-house"></i>${esc(p.typeLabel || cfg.label)}`; $('type-badge').style.color = cfg.color; $('type-badge').style.borderColor = cfg.color;
     $('title').textContent = p.title || 'Imóvel';
@@ -223,17 +228,23 @@ document.addEventListener('keydown', e => {
     if (!photos.length) photos = [''];
     paintGallery();
 
-    // Falha ao ler avaliações não pode derrubar a página do anúncio inteiro.
-    try {
-      propertyReviews = await bridge.loadPropertyReviews(p.id);
-    } catch (reviewError) {
-      console.error('Não foi possível carregar avaliações. Verifique as regras do Firestore para propertyReviews:', reviewError);
+    // As avaliações só existem para áreas de lazer. A leitura é omitida em venda/aluguel.
+    if (isLeisureProperty) {
+      // Falha ao ler avaliações não pode derrubar a página do anúncio inteiro.
+      try {
+        propertyReviews = await bridge.loadPropertyReviews(p.id);
+      } catch (reviewError) {
+        console.error('Não foi possível carregar avaliações. Verifique as regras do Firestore para propertyReviews:', reviewError);
+        propertyReviews = [];
+        const systemStatus = $('review-system-status');
+        if (systemStatus) { systemStatus.textContent = 'As avaliações estão temporariamente indisponíveis. Publique as regras do Firestore incluídas no pacote para ativá-las.'; systemStatus.classList.remove('hidden'); }
+      }
+      paintReviews();
+      paintReviewForm();
+    } else {
       propertyReviews = [];
-      const systemStatus = $('review-system-status');
-      if (systemStatus) { systemStatus.textContent = 'As avaliações estão temporariamente indisponíveis. Publique as regras do Firestore incluídas no pacote para ativá-las.'; systemStatus.classList.remove('hidden'); }
+      if ($('guest-badge')) $('guest-badge').classList.add('hidden');
     }
-    paintReviews();
-    paintReviewForm();
     $('owner-name').textContent = p.ownerName || 'Proprietário'; $('owner-phone').textContent = p.ownerPhone || '';
     $('owner-photo').src = p.ownerPhoto || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80';
     const phone = String(p.ownerPhone || '').replace(/\D/g,''); const waPhone = phone ? (phone.startsWith('55') ? phone : `55${phone}`) : '';

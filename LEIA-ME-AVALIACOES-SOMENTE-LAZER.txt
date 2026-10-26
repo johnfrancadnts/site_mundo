@@ -1,0 +1,13 @@
+OPENWORD — AVALIAÇÕES SOMENTE EM ÁREAS DE LAZER
+
+Alteração incluída:
+- A seção “Avaliações dos visitantes” começa oculta e só aparece depois que o anúncio é identificado como type = "lazer".
+- Anúncios de venda e aluguel não exibem formulário, lista ou aviso de avaliações.
+- A página não faz leitura da coleção de avaliações para anúncios de venda/aluguel.
+- As avaliações e a lista de comodidades continuam disponíveis em anúncios do tipo área de lazer.
+
+Como aplicar:
+1. Substitua imovel.html e js/property-detail.js no repositório do GitHub.
+2. Faça commit e aguarde o GitHub Pages publicar.
+
+Não é necessário alterar as regras do Firestore para esta mudança de exibição. A gravação de avaliações de lazer continua dependendo das regras já configuradas no Firebase.
