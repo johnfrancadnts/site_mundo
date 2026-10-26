@@ -1,0 +1,21 @@
+CORREÇÃO DA ABERTURA DOS IMÓVEIS — OPENWORD
+
+Esta versão corrige o fluxo que abre um anúncio em uma nova aba.
+
+O que foi ajustado:
+- A página de detalhes tenta buscar o anúncio diretamente e, se necessário, usa a mesma leitura da coleção que alimenta a vitrine.
+- A renderização do anúncio não fica mais bloqueada pela restauração da sessão de login; o anúncio pode abrir mesmo se a autenticação demorar.
+- O botão de abrir imóvel monta a URL considerando a pasta atual do GitHub Pages, reduzindo o risco de apontar para fora da pasta do projeto.
+- Mantém a página de detalhes, comodidades com ícones, galeria, avaliações e paleta original do OpenWord.
+
+COMO APLICAR COM MENOR RISCO:
+1. Extraia o ZIP.
+2. No repositório GitHub do site, substitua estes dois arquivos:
+   - js/app.js
+   - js/property-detail.js
+3. Não apague os outros arquivos e não altere a configuração do Firebase.
+4. Faça commit/push e aguarde o GitHub Pages publicar.
+5. Abra a página inicial, atualize com Ctrl+F5 e clique em “Ver imóvel”.
+
+OBSERVAÇÃO:
+Os arquivos passaram pela validação de sintaxe JavaScript e o ZIP foi validado. Não foi possível executar um teste autenticado contra o Firebase real do site publicado nesta sessão. Se o erro persistir, abra F12 > Console e envie a primeira mensagem vermelha; ela identificará se o bloqueio vem das regras do Firestore, da URL do anúncio ou da configuração do Firebase.

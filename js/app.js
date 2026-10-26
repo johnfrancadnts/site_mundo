@@ -1189,7 +1189,12 @@
       showToast('Imóvel não encontrado', 'Atualize a página e tente novamente.', 'fa-house');
       return;
     }
-    const detailUrl = new URL(`imovel.html?id=${encodeURIComponent(propId)}`, window.location.href);
+    // Resolve a página de detalhes dentro da pasta atual do GitHub Pages,
+    // mesmo quando a URL inicial não termina com barra.
+    let currentPath = window.location.pathname || '/';
+    if (!currentPath.endsWith('/') && !/\.[a-z0-9]+$/i.test(currentPath)) currentPath += '/';
+    const basePath = currentPath.endsWith('/') ? currentPath : currentPath.slice(0, currentPath.lastIndexOf('/') + 1);
+    const detailUrl = new URL(`${basePath}imovel.html?id=${encodeURIComponent(propId)}`, window.location.origin);
     window.open(detailUrl.href, '_blank', 'noopener,noreferrer');
   }
 

@@ -152,21 +152,44 @@ document.addEventListener('keydown', e => {
     const id = params.get('id') || params.get('imovel') || params.get('propertyId');
     if (!id) { showError('O link deste anúncio está incompleto: não encontramos o código do imóvel. Volte à lista e abra o anúncio novamente.'); return; }
 
-    // Aguarda o Firebase restaurar a sessão antes de preparar o formulário de avaliação.
+    // Carrega o anúncio primeiro, sem depender da restauração da sessão de login.
+    // A lista pública já é usada pela vitrine principal e mantém compatibilidade com anúncios existentes.
     await window.firebaseBridgeReady;
     const bridge = window.firebaseBridge;
-    signedInUser = await bridge.waitForAuthReady();
-    paintAccountState(signedInUser);
-    bridge.startAuthListener(user => {
-      signedInUser = user || null;
-      paintAccountState(signedInUser);
-      paintReviewForm();
-      paintReviews();
-    });
+    if (!bridge) throw new Error('A conexão com o Firebase não foi inicializada.');
 
-    // Busca o anúncio pelo ID exato. Não depende de carregar a coleção inteira.
-    property = await bridge.getProperty(id);
-    if (!property) { showError('Este anúncio não foi encontrado no Firebase. Confirme se o anúncio ainda existe e abra-o novamente pela lista de imóveis.'); return; }
+    // A sessão e os controles de avaliação são inicializados em paralelo com o anúncio.
+    // Se a sessão demorar ou falhar, a página do imóvel ainda poderá ser exibida.
+    try {
+      bridge.startAuthListener(user => {
+        signedInUser = user || null;
+        paintAccountState(signedInUser);
+        paintReviewForm();
+        paintReviews();
+      });
+      signedInUser = await Promise.race([
+        bridge.waitForAuthReady(),
+        new Promise(resolve => setTimeout(() => resolve(bridge.getCurrentUser?.() || null), 3500))
+      ]);
+      paintAccountState(signedInUser);
+    } catch (authError) {
+      console.warn('Não foi possível restaurar a sessão nesta aba; o anúncio será carregado mesmo assim.', authError);
+      signedInUser = bridge.getCurrentUser?.() || null;
+      paintAccountState(signedInUser);
+    }
+
+    // Primeiro tenta o documento direto; se isso falhar ou não o encontrar, usa a mesma
+    // leitura da coleção que alimenta a vitrine principal (compatibilidade com dados antigos).
+    try { property = await bridge.getProperty(id); }
+    catch (directReadError) { console.warn('Leitura direta do anúncio falhou; tentando a lista pública.', directReadError); }
+    if (!property) {
+      const allProperties = await bridge.loadProperties();
+      property = allProperties.find(item => String(item.id) === String(id)) || null;
+    }
+    if (!property) {
+      showError('Não encontramos este anúncio. Volte à lista de imóveis e abra o anúncio novamente. Se o problema continuar, atualize a página inicial e tente de novo.');
+      return;
+    }
     const p = property;
     const cfg = { venda:{label:'VENDA',color:'#00e6a8'}, aluguel:{label:'ALUGUEL',color:'#38bdf8'}, lazer:{label:'ÁREA DE LAZER',color:'#eab308'} }[p.type] || {label:p.typeLabel || 'IMÓVEL',color:'#00e6a8'};
     $('type-badge').innerHTML = `<i class="fa-solid fa-house"></i>${esc(p.typeLabel || cfg.label)}`; $('type-badge').style.color = cfg.color; $('type-badge').style.borderColor = cfg.color;
