@@ -1,0 +1,25 @@
+OPENWORD — COMODIDADES COM ÍCONES E BOTÃO “MOSTRAR TODAS”
+
+O que foi alterado
+- A área “O que este espaço oferece” mantém a paleta original do OpenWord.
+- Cada comodidade ganha um ícone conforme o texto (por exemplo, Wi‑Fi, piscina, cozinha, estacionamento, TV, lavanderia, praia, ar-condicionado e outros).
+- A página mostra inicialmente até 8 comodidades em uma grade de duas colunas para reduzir a rolagem.
+- Quando houver mais de 8 itens, aparece o botão “Mostrar todas as N comodidades”.
+- O botão abre uma janela responsiva com a lista completa e ícones; fecha pelo X, clicando fora ou usando Escape.
+- A lista completa usa os dados de comodidades já salvos no anúncio. Não cria comodidades novas nem altera os dados publicados.
+- Mantidas as demais páginas, avaliações, fotos, contato, mapa e integração Firebase do pacote anterior.
+
+Arquivos alterados
+- imovel.html
+- js/property-detail.js
+
+Como publicar
+1. Faça uma cópia de segurança dos arquivos atuais.
+2. Substitua imovel.html e js/property-detail.js no repositório do GitHub pelos arquivos deste pacote.
+3. Faça commit e aguarde o GitHub Pages atualizar.
+4. Teste um anúncio de área de lazer com mais de 8 comodidades e outro com 8 ou menos.
+
+Validação realizada
+- JavaScript verificado com node --check.
+- ZIP verificado quanto à integridade.
+- A validação não substitui teste visual no site publicado e não confirma configuração/permissões externas do Firebase.

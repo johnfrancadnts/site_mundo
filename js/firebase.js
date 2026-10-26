@@ -186,6 +186,31 @@ const bridge = {
     const snap = await getDocs(collection(db, 'reviews'));
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   },
+  async loadPropertyReviews(propertyId) {
+    const snap = await getDocs(collection(db, 'propertyReviews'));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(review => review.propertyId === propertyId);
+  },
+  async savePropertyReview({ propertyId, stars, text }) {
+    if (!auth.currentUser) throw new Error('Entre na sua conta OpenWord para avaliar.');
+    if (!propertyId) throw new Error('Não foi possível identificar o anúncio.');
+    if (!Number.isInteger(stars) || stars < 1 || stars > 5) throw new Error('Escolha uma nota de 1 a 5 estrelas.');
+    const comment = String(text || '').trim();
+    if (!comment) throw new Error('Escreva um comentário antes de publicar.');
+    if (comment.length > 1200) throw new Error('O comentário pode ter no máximo 1.200 caracteres.');
+    const ref = doc(db, 'propertyReviews', `${propertyId}_${auth.currentUser.uid}`);
+    const data = {
+      propertyId,
+      authorId: auth.currentUser.uid,
+      authorName: auth.currentUser.displayName || (auth.currentUser.email || '').split('@')[0] || 'Visitante OpenWord',
+      stars,
+      text: comment,
+      updatedAt: serverTimestamp()
+    };
+    const existing = await getDoc(ref);
+    if (!existing.exists()) data.createdAt = serverTimestamp();
+    await setDoc(ref, data, { merge: true });
+    return { id: ref.id, ...data, createdAt: data.createdAt || existing.data()?.createdAt || null };
+  },
   async saveReview(review) {
     if (!auth.currentUser) throw new Error('Faça login para avaliar.');
     if (!review.targetOwnerId) throw new Error('Este perfil não está vinculado a uma conta registrada.');

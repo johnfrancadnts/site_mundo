@@ -16,6 +16,39 @@ service cloud.firestore {
       allow delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
     }
 
+
+    // Avaliações públicas de anúncios: uma avaliação por conta e imóvel.
+    // O ID determinístico do documento é formado por propertyId + UID do autor.
+    match /propertyReviews/{reviewId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.authorId == request.auth.uid
+                    && request.resource.data.propertyId is string
+                    && request.resource.data.propertyId.size() > 0
+                    && reviewId == request.resource.data.propertyId + '_' + request.auth.uid
+                    && request.resource.data.stars is int
+                    && request.resource.data.stars >= 1
+                    && request.resource.data.stars <= 5
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() <= 1200
+                    && request.resource.data.authorName is string
+                    && get(/databases/$(database)/documents/properties/$(request.resource.data.propertyId)).data.ownerId != request.auth.uid;
+      allow update: if request.auth != null
+                    && resource.data.authorId == request.auth.uid
+                    && request.resource.data.authorId == request.auth.uid
+                    && request.resource.data.propertyId == resource.data.propertyId
+                    && reviewId == request.resource.data.propertyId + '_' + request.auth.uid
+                    && get(/databases/$(database)/documents/properties/$(request.resource.data.propertyId)).data.ownerId != request.auth.uid
+                    && request.resource.data.stars is int
+                    && request.resource.data.stars >= 1
+                    && request.resource.data.stars <= 5
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() <= 1200;
+      allow delete: if request.auth != null && resource.data.authorId == request.auth.uid;
+    }
+
     // Avaliações visíveis publicamente, criadas por usuário autenticado, sem autoavaliação.
     match /reviews/{reviewId} {
       allow read: if true;

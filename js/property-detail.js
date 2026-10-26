@@ -3,7 +3,119 @@ const esc = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp
 let photos = [];
 let photoIndex = 0;
 let property = null;
+let signedInUser = null;
+let propertyReviews = [];
+let selectedStars = 0;
+let reviewSaving = false;
 function showError(message) { $('loading').classList.add('hidden'); $('property-page').classList.add('hidden'); $('error').classList.remove('hidden'); $('error-message').textContent = message; }
+
+function reviewDate(review) {
+  const value = review.createdAt || review.updatedAt;
+  const date = value?.toDate ? value.toDate() : value instanceof Date ? value : null;
+  return date ? new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).format(date) : 'Visitante OpenWord';
+}
+function paintReviewStars() {
+  document.querySelectorAll('[data-star]').forEach(button => {
+    const active = Number(button.dataset.star) <= selectedStars;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-checked', String(Number(button.dataset.star) === selectedStars));
+  });
+}
+function paintReviewSummary() {
+  const count = propertyReviews.length;
+  const average = count ? propertyReviews.reduce((sum, review) => sum + Number(review.stars || 0), 0) / count : 0;
+  if ($('guest-badge')) {
+    $('guest-badge').classList.toggle('hidden', property?.type !== 'lazer');
+    $('guest-average').textContent = count ? average.toFixed(1).replace('.', ',') : '—';
+    $('guest-count').textContent = String(count);
+    $('guest-stars').textContent = count ? '★'.repeat(Math.round(average)) + '☆'.repeat(5 - Math.round(average)) : '☆☆☆☆☆';
+    $('guest-badge-title').textContent = count >= 5 && average >= 4.8 ? 'Preferido dos hóspedes' : 'Avaliações dos visitantes';
+    $('guest-badge-copy').textContent = count ? (count >= 5 && average >= 4.8 ? 'Um dos espaços mais bem avaliados pelos visitantes' : 'Nota média baseada nas avaliações deste espaço') : 'Seja a primeira pessoa a avaliar este espaço';
+  }
+}
+function paintReviews() {
+  const list = $('review-list');
+  if (!list) return;
+  const ordered = [...propertyReviews].sort((a,b) => {
+    const time = item => (item.createdAt?.toMillis ? item.createdAt.toMillis() : item.updatedAt?.toMillis ? item.updatedAt.toMillis() : 0);
+    return time(b) - time(a);
+  });
+  list.innerHTML = ordered.length ? ordered.map(review => `<article class="review-item"><div class="review-item-top"><div><div class="review-author">${esc(review.authorName || 'Visitante OpenWord')}</div><div class="guest-stars" aria-label="Nota ${Number(review.stars)||0} de 5">${'★'.repeat(Math.max(0,Math.min(5,Number(review.stars)||0)))}${'☆'.repeat(5-Math.max(0,Math.min(5,Number(review.stars)||0)))}</div></div><time class="review-date">${esc(reviewDate(review))}</time></div><p class="review-text">${esc(review.text || '')}</p>${signedInUser?.uid === review.authorId ? '<p class="review-note">Esta é sua avaliação. Se publicar novamente, ela será atualizada.</p>' : ''}</article>`).join('') : '<p class="muted text-sm">Ainda não há avaliações. Sua experiência pode ajudar outras pessoas.</p>';
+  paintReviewSummary();
+}
+function paintReviewForm() {
+  const fields = $('review-form-fields');
+  const note = $('review-auth-note');
+  if (!fields || !note) return;
+  if (property?.ownerId && signedInUser?.uid === property.ownerId) {
+    fields.classList.add('hidden');
+    note.textContent = 'O anunciante não pode avaliar o próprio anúncio.';
+    return;
+  }
+  if (!signedInUser) {
+    fields.classList.add('hidden');
+    note.innerHTML = 'Para avaliar, <a href="./" target="_blank" rel="noopener noreferrer" class="neon underline font-extrabold">entre na sua conta OpenWord</a> em outra aba e depois atualize esta página.';
+    return;
+  }
+  fields.classList.remove('hidden');
+  const own = propertyReviews.find(review => review.authorId === signedInUser.uid);
+  if (own) {
+    selectedStars = Number(own.stars) || 0;
+    $('review-comment').value = own.text || '';
+    $('review-submit').textContent = 'Atualizar avaliação';
+    note.textContent = 'Você já avaliou este anúncio. Se publicar novamente, sua avaliação será atualizada.';
+  } else {
+    $('review-submit').textContent = 'Publicar avaliação';
+    note.textContent = `Conectado como ${signedInUser.displayName || signedInUser.email || 'usuário OpenWord'}.`;
+  }
+  paintReviewStars();
+}
+async function submitPropertyReview() {
+  if (reviewSaving) return;
+  if (!signedInUser) { $('review-auth-note').textContent = 'Entre na sua conta OpenWord em outra aba e atualize esta página para avaliar.'; return; }
+  if (property?.ownerId && signedInUser.uid === property.ownerId) { $('review-auth-note').textContent = 'O anunciante não pode avaliar o próprio anúncio.'; return; }
+  const text = $('review-comment').value.trim();
+  if (!selectedStars) { $('review-status').textContent = 'Escolha uma nota de 1 a 5 estrelas.'; return; }
+  if (!text) { $('review-status').textContent = 'Escreva um comentário antes de publicar.'; return; }
+  reviewSaving = true;
+  $('review-submit').disabled = true;
+  $('review-submit').textContent = 'Publicando...';
+  $('review-status').textContent = '';
+  try {
+    await window.firebaseBridge.savePropertyReview({ propertyId: property.id, stars: selectedStars, text });
+    propertyReviews = await window.firebaseBridge.loadPropertyReviews(property.id);
+    paintReviews();
+    paintReviewForm();
+    $('review-status').textContent = 'Sua avaliação foi salva.';
+  } catch (error) {
+    console.error('Falha ao salvar avaliação do imóvel:', error);
+    $('review-status').textContent = window.firebaseBridge?.friendlyError(error) || error.message || 'Não foi possível salvar. Tente novamente.';
+  } finally {
+    reviewSaving = false;
+    $('review-submit').disabled = false;
+    if (signedInUser && !propertyReviews.find(review => review.authorId === signedInUser.uid)) $('review-submit').textContent = 'Publicar avaliação';
+    else $('review-submit').textContent = 'Atualizar avaliação';
+  }
+}
+document.querySelectorAll('[data-star]').forEach(button => button.addEventListener('click', () => { selectedStars = Number(button.dataset.star); paintReviewStars(); }));
+$('review-submit')?.addEventListener('click', submitPropertyReview);
+
+function amenityLabel(item) { return String(typeof item === 'string' ? item : item?.label || item?.name || item?.title || '').trim(); }
+function amenityIcon(label) {
+  const value = String(label || '').toLocaleLowerCase('pt-BR');
+  const rules = [
+    [/wi.?fi|internet|wifi/, 'fa-wifi'], [/piscina|borda infinita/, 'fa-person-swimming'], [/praia|mar|beira.mar/, 'fa-water'], [/cozinha|fogão|forno|micro.ondas|geladeira|utensílio/, 'fa-utensils'], [/estacionamento|garagem|vaga/, 'fa-car'], [/tv|televisão|televisor/, 'fa-tv'], [/lavar|lavadora|máquina de lavar|secadora/, 'fa-soap'], [/elevador/, 'fa-building'], [/ar condicionado|climatiza/, 'fa-snowflake'], [/churrasqueira|churrasco/, 'fa-fire-burner'], [/academia|fitness/, 'fa-dumbbell'], [/jardim|área verde/, 'fa-tree'], [/varanda|sacada|terraço/, 'fa-umbrella'], [/trabalho|escritório|mesa/, 'fa-laptop'], [/segurança|portaria|porteiro/, 'fa-shield-halved'], [/câmera|monitoramento/, 'fa-video'], [/banheira|hidromassagem/, 'fa-bath'], [/pet|animal/, 'fa-paw'], [/acessibilidade|cadeirante/, 'fa-wheelchair'], [/cama|roupa de cama|lençol/, 'fa-bed'], [/vista/, 'fa-image'], [/água|chuveiro|banheiro/, 'fa-shower'], [/energia|gerador/, 'fa-bolt'], [/portão/, 'fa-door-closed'], [/salão|festa|evento/, 'fa-champagne-glasses'], [/mesa|jantar/, 'fa-chair']
+  ];
+  return (rules.find(([pattern]) => pattern.test(value)) || [null, 'fa-circle-check'])[1];
+}
+function amenityMarkup(label) { return `<div class="amenity"><i class="fa-solid ${amenityIcon(label)}" aria-hidden="true"></i><span>${esc(label)}</span></div>`; }
+function openAmenityModal() { $('amenity-modal').classList.add('open'); document.body.style.overflow='hidden'; $('amenity-modal-close').focus(); }
+function closeAmenityModal() { $('amenity-modal').classList.remove('open'); document.body.style.overflow = $('photo-modal').classList.contains('open') ? 'hidden' : ''; }
+$('show-all-amenities')?.addEventListener('click', openAmenityModal);
+$('amenity-modal-close')?.addEventListener('click', closeAmenityModal);
+$('amenity-modal')?.addEventListener('click', event => { if (event.target === $('amenity-modal')) closeAmenityModal(); });
+
+
 function paintGallery() {
   if (!photos.length) photos = [''];
   const gallery = $('gallery');
@@ -28,7 +140,11 @@ $('modal-prev').addEventListener('click', () => changePhoto(-1));
 $('modal-next').addEventListener('click', () => changePhoto(1));
 $('modal-close').addEventListener('click', closeGallery);
 $('photo-modal').addEventListener('click', e => { if (e.target === $('photo-modal')) closeGallery(); });
-document.addEventListener('keydown', e => { if (!$('photo-modal').classList.contains('open')) return; if (e.key === 'Escape') closeGallery(); if (e.key === 'ArrowLeft') changePhoto(-1); if (e.key === 'ArrowRight') changePhoto(1); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if ($('photo-modal').classList.contains('open')) closeGallery(); if ($('amenity-modal').classList.contains('open')) closeAmenityModal(); return; }
+  if (!$('photo-modal').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft') changePhoto(-1); if (e.key === 'ArrowRight') changePhoto(1);
+});
 (async function init() {
   try {
     const id = new URLSearchParams(location.search).get('id');
@@ -36,6 +152,7 @@ document.addEventListener('keydown', e => { if (!$('photo-modal').classList.cont
     await window.firebaseBridgeReady;
     const bridge = window.firebaseBridge;
     const all = await bridge.loadProperties();
+    bridge.startAuthListener(user => { signedInUser = user || null; paintReviewForm(); paintReviews(); });
     property = all.find(item => item.id === id);
     const p = property;
     if (!p) { showError('Este anúncio não foi encontrado. Ele pode ter sido removido.'); return; }
@@ -56,11 +173,23 @@ document.addEventListener('keydown', e => { if (!$('photo-modal').classList.cont
     const description = p.description || p.details || '';
     if (description.trim()) { $('description-wrap').classList.remove('hidden'); $('description').textContent = description; }
     const amenities = Array.isArray(p.amenities) ? p.amenities : Array.isArray(p.comodidades) ? p.comodidades : [];
-    if (p.type === 'lazer' && amenities.length) { $('amenities-wrap').classList.remove('hidden'); $('amenities').innerHTML = amenities.map(a => `<div class="amenity"><i class="fa-solid fa-check"></i><span>${esc(typeof a === 'string' ? a : a.label || a.name || '')}</span></div>`).join(''); }
+    if (p.type === 'lazer') {
+      $('amenities-wrap').classList.remove('hidden'); $('guest-badge').classList.remove('hidden');
+      const labels = [...new Set(amenities.map(amenityLabel).filter(Boolean))];
+      const visibleCount = 8;
+      $('amenities').innerHTML = labels.length ? labels.slice(0, visibleCount).map(amenityMarkup).join('') : '<p class="muted text-sm">O anunciante ainda não cadastrou itens de lazer.</p>';
+      $('amenity-modal-list').innerHTML = labels.map(amenityMarkup).join('');
+      $('show-all-amenities').classList.toggle('hidden', labels.length <= visibleCount);
+      $('show-all-amenities-label').textContent = `Mostrar todas as ${labels.length} comodidades`;
+      $('amenity-modal-title').textContent = `Todas as ${labels.length} comodidades`;
+    }
     photos = (Array.isArray(p.photos) ? p.photos : []).filter(Boolean);
     if (!photos.length && p.photo) photos = [p.photo];
     if (!photos.length) photos = [''];
     paintGallery();
+    propertyReviews = await bridge.loadPropertyReviews(p.id);
+    paintReviews();
+    paintReviewForm();
     $('owner-name').textContent = p.ownerName || 'Proprietário'; $('owner-phone').textContent = p.ownerPhone || '';
     $('owner-photo').src = p.ownerPhoto || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80';
     const phone = String(p.ownerPhone || '').replace(/\D/g,''); const waPhone = phone.startsWith('55') ? phone : `55${phone}`;

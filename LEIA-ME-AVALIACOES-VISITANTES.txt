@@ -1,0 +1,22 @@
+OPENWORD — AVALIAÇÕES DOS VISITANTES E DESTAQUE PARA ÁREAS DE LAZER
+
+O que foi incluído:
+- Nas páginas de anúncios de áreas de lazer, aparece uma faixa inspirada no modelo de referência enviado, com nome do destaque, média das notas, estrelas e quantidade de avaliações.
+- A frase “Preferido dos hóspedes” só aparece quando o anúncio alcançar pelo menos 5 avaliações e média igual ou superior a 4,8. Antes disso, a faixa mostra “Avaliações dos visitantes”, para não declarar um destaque sem dados suficientes.
+- Todos os anúncios possuem uma seção pública “Avaliações dos visitantes”, onde pessoas podem deixar nota de 1 a 5 estrelas e comentário de até 1.200 caracteres.
+- É necessário estar conectado a uma conta OpenWord para publicar. O dono não pode avaliar o próprio anúncio.
+- Cada conta pode ter uma avaliação por anúncio; se publicar novamente, atualiza a própria avaliação. As avaliações ficam públicas e podem ser apagadas pelo próprio autor.
+- O sistema orienta que as avaliações sejam baseadas em experiências reais, mas não verifica tecnicamente se a pessoa realmente visitou o local.
+
+ARQUIVOS ALTERADOS
+- imovel.html
+- js/property-detail.js
+- js/firebase.js
+- firestore.rules
+
+PUBLICAÇÃO
+1. Envie os arquivos atualizados ao repositório GitHub, preservando os demais arquivos existentes.
+2. Para ativar o salvamento das avaliações, abra Firebase Console > Firestore Database > Regras, substitua o conteúdo pelas regras do arquivo firestore.rules e publique as regras.
+3. Aguarde o GitHub Pages atualizar e teste um anúncio com uma conta OpenWord conectada.
+
+Atenção: o código e o pacote foram verificados localmente quanto à sintaxe JavaScript e integridade do ZIP, mas não foi possível testar a gravação real no Firebase do site publicado nesta etapa.
