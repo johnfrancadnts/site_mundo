@@ -1,0 +1,7 @@
+CORREÇÃO PONTUAL DOS CARTÕES OPENWORD
+
+O problema visual foi causado por uma regra CSS que definia width:100% e height:100% para TODAS as imagens dentro das duas vitrines. Isso incluía as fotos de perfil dos proprietários, fazendo-as ocupar o cartão inteiro e esticando os cards de planos.
+
+A regra foi limitada às imagens que ficam diretamente dentro de .property-photo-frame (foto principal do imóvel). Assim, as fotos de perfil voltam a respeitar as classes w-6/h-6 e w-7/h-7 e o cartão de plano mantém o modelo padrão da vitrine normal.
+
+A lógica de publicação, autenticação, planos, Firestore e exclusão não foi alterada. Foram verificados a sintaxe dos JS e o ZIP; não foi possível executar o site no Firebase publicado a partir daqui.
