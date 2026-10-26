@@ -1,0 +1,15 @@
+OPENWORD — REVISÃO DO MODO DE TESTE DOS PLANOS
+
+Alterações realizadas nesta revisão:
+- Janela global de teste termina em 25/11/2026 às 23:59:59 (horário de Brasília).
+- PRO/Imobiliária expiram no máximo ao final dessa janela, mesmo se o prazo individual de 30 dias fosse maior.
+- Planos de teste sem data de validade não são mais considerados ativos; evita destaque eterno por dados antigos/incompletos.
+- Depois do fim da janela, o modal bloqueia novas ativações.
+- O estado é marcado como planTestMode, planStatus e planPaymentStatus=unpaid.
+- O feed só considera plano de teste durante a janela válida; foi reservada estrutura para plano real ativo e pago, mas não existe ainda integração de pagamento.
+- Corrigido saveProperty para não substituir createdAt a cada mudança de plano, evitando que o anúncio pareça recém-publicado.
+
+IMPORTANTE — SEGURANÇA:
+O site é estático (GitHub Pages). Enquanto as regras atuais do Firestore permitem ao proprietário atualizar todos os campos do próprio anúncio, a pessoa pode adulterar campos de plano pelo navegador. Isso é aceitável apenas em ambiente de teste, não para cobrar clientes. Antes do lançamento, é obrigatório bloquear a alteração de campos de plano pelo cliente nas regras e criar backend (por exemplo, Cloud Functions) que atualize plano/status somente após webhook autenticado do provedor de pagamento. Nunca considerar o retorno do navegador como confirmação de pagamento.
+
+Verificações executadas: sintaxe de app.js e firebase.js, inspeção do prazo de teste, e integridade do ZIP. Não foi possível executar teste de ponta a ponta no Firebase publicado nem teste visual em todos os dispositivos.

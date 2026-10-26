@@ -1,0 +1,8 @@
+OPENWORD — COMODIDADES PARA ÁREA DE LAZER
+
+- As comodidades aparecem somente quando a finalidade selecionada é “Área de Lazer”.
+- O anunciante pode marcar apenas os itens que o espaço realmente oferece.
+- As comodidades selecionadas são salvas junto ao anúncio e aparecem no imóvel em destaque.
+- Para venda e aluguel residencial, o bloco fica oculto e nenhuma comodidade é anexada ao anúncio.
+- Categorias incluídas: área externa, internet e trabalho, conforto, entretenimento, cozinha, lavanderia, estacionamento, básico, banheiro, acessibilidade e segurança.
+- O preenchimento é opcional: o anunciante pode publicar sem marcar comodidades.

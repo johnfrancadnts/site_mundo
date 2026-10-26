@@ -439,7 +439,7 @@
       propertyList = await window.firebaseBridge.loadProperties();
       const reviews = await window.firebaseBridge.loadReviews(); ownersDatabase = {};
       reviews.forEach(review => { const key = review.targetOwnerId || review.targetOwnerName || 'unknown'; if (!ownersDatabase[key]) ownersDatabase[key] = { uid: review.targetOwnerId || '', name: review.targetOwnerName || 'Proprietário', phone: '', avatar: '', memberSince: '', reviews: [] }; ownersDatabase[key].reviews.push(review); });
-      if (propertyList.length && !currentFeatured) currentFeatured = propertyList[0];
+      if (propertyList.length && !currentFeatured) currentFeatured = [...propertyList].sort((a,b)=>(testPlanConfig[b.planId]?.priority||0)-(testPlanConfig[a.planId]?.priority||0))[0];
       renderPropertiesVitrine(); updateFeaturedUI();
     } catch (err) { console.error('Erro carregando dados:', err); showToast('Erro ao carregar anúncios', 'Confira as regras do Firestore no arquivo LEIA-ME.', 'fa-triangle-exclamation'); }
   }
@@ -733,6 +733,22 @@
     document.getElementById('featured-description').textContent = description;
     descWrap.classList.toggle('hidden', !description.trim());
 
+    const amenitiesWrap = document.getElementById('featured-amenities-wrap');
+    const amenitiesList = document.getElementById('featured-amenities-list');
+    const propertyAmenities = Array.isArray(currentFeatured.amenities) ? currentFeatured.amenities : [];
+    amenitiesList.innerHTML = '';
+    propertyAmenities.forEach(name => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2 min-w-0';
+      const icon = document.createElement('i');
+      icon.className = 'fa-solid fa-check text-yellow-400 w-4 text-center';
+      const label = document.createElement('span');
+      label.textContent = name;
+      row.append(icon, label);
+      amenitiesList.appendChild(row);
+    });
+    amenitiesWrap.classList.toggle('hidden', currentFeatured.type !== 'lazer' || propertyAmenities.length === 0);
+
     document.getElementById('featured-owner-name').textContent = currentFeatured.ownerName;
     document.getElementById('featured-owner-phone').textContent = currentFeatured.ownerPhone;
     
@@ -818,16 +834,112 @@
   }
 
   // Render Horizontal Slider
+  const testPlanConfig = {
+    free: {label:'Gratuito', priority:0, days:0},
+    pro: {label:'PRO (teste)', priority:1, days:30},
+    agency: {label:'Imobiliária (teste)', priority:2, days:30}
+  };
+  // Janela temporária de testes: encerra em 25/11/2026 às 23:59:59 (horário de Brasília).
+  // Antes de lançar, substituir a ativação pelo navegador por autorização de backend + pagamento confirmado.
+  const TEST_PLANS_END_AT = new Date('2026-11-26T02:59:59.000Z').getTime();
+  function isTestPlansWindowOpen() { return Date.now() <= TEST_PLANS_END_AT; }
+
+  function getPlanExpiry(prop) {
+    if (!prop?.planExpiresAt) return NaN;
+    return typeof prop.planExpiresAt === 'number' ? prop.planExpiresAt : Date.parse(prop.planExpiresAt);
+  }
+
+  function isPlanActive(prop) {
+    if (!prop || !prop.planId || prop.planId === 'free') return false;
+    const expiry = getPlanExpiry(prop);
+    // Planos ativados no modo de teste nunca ficam ativos indefinidamente nem ultrapassam a janela de teste.
+    if (prop.planTestMode === true) return isTestPlansWindowOpen() && Number.isFinite(expiry) && expiry > Date.now();
+    // Estrutura reservada para planos reais, que só deverão ser liberados pelo backend após confirmação do pagamento.
+    return prop.planPaymentStatus === 'paid' && prop.planStatus === 'active' && Number.isFinite(expiry) && expiry > Date.now();
+  }
+
+  function renderPlanFeatured() {
+    const grid = document.getElementById('plan-featured-slider');
+    const empty = document.getElementById('plan-featured-empty');
+    if (!grid || !empty) return;
+    const featured = propertyList.filter(isPlanActive).sort((a,b) => {
+      const pa = testPlanConfig[a.planId]?.priority || 0;
+      const pb = testPlanConfig[b.planId]?.priority || 0;
+      if (pb !== pa) return pb - pa;
+      const ea = getPlanExpiry(a) || 0;
+      const eb = getPlanExpiry(b) || 0;
+      return eb - ea;
+    });
+    grid.innerHTML = '';
+    document.getElementById('plan-featured-count').textContent = `${featured.length} anúncio${featured.length===1?'':'s'} com plano`;
+    empty.classList.toggle('hidden', featured.length > 0);
+    featured.forEach(prop => {
+      const cfg = typeConfig[prop.type] || typeConfig.aluguel;
+      const priorityLabel = prop.planId === 'agency' ? 'IMOBILIÁRIA • PRIORIDADE MÁXIMA' : 'PRO • EM DESTAQUE';
+      const card = document.createElement('article');
+      card.className = 'min-w-0 overflow-hidden rounded-2xl border border-yellow-500/40 bg-cardnavy shadow-lg flex flex-col';
+      const img = document.createElement('img'); img.src = prop.photos?.[0] || ''; img.alt = prop.title || 'Imóvel'; img.className='w-full aspect-[4/3] object-cover';
+      const imageWrap = document.createElement('div'); imageWrap.className='relative'; imageWrap.appendChild(img);
+      const badge=document.createElement('span'); badge.className='absolute top-2 left-2 rounded-full bg-yellow-400 text-slate-950 px-2 py-1 text-[9px] font-black'; badge.textContent=priorityLabel; imageWrap.appendChild(badge);
+      const body=document.createElement('div'); body.className='p-3 flex flex-col flex-1 min-w-0';
+      const title=document.createElement('h3'); title.className='text-sm font-extrabold text-white break-words'; title.textContent=prop.title || 'Imóvel';
+      const address=document.createElement('p'); address.className='text-[11px] text-slate-400 mt-1 break-words'; address.textContent=prop.address || '';
+      const price=document.createElement('p'); price.className='text-base font-black mt-2'; price.style.color=cfg.color; price.textContent=prop.price || '';
+      const btn=document.createElement('button'); btn.className='mt-3 w-full rounded-xl bg-neon text-slate-950 font-bold text-xs p-2.5'; btn.textContent='Ver imóvel'; btn.onclick=()=>{setAsFeatured(prop.id);};
+      body.append(title,address,price,btn); card.append(imageWrap,body); grid.appendChild(card);
+    });
+  }
+
+  function openPlansTestModal() {
+    if (!isTestPlansWindowOpen()) {
+      showToast('Período de teste encerrado','A ativação gratuita de planos terminou. Para liberar planos novamente, configure o backend e a confirmação de pagamentos.','fa-lock');
+      return;
+    }
+    if (!currentUser.isLoggedIn) { showToast('Entre na sua conta','Faça login para testar um plano em um dos seus anúncios.','fa-lock'); openAuthModal(false); return; }
+    const select=document.getElementById('plan-test-listing');
+    const mine=propertyList.filter(p=>p.ownerId===currentUser.uid);
+    select.innerHTML='';
+    mine.forEach(p=>{const opt=document.createElement('option');opt.value=p.id;opt.textContent=`${p.title} — ${p.price}`;select.appendChild(opt);});
+    if (!mine.length) { const opt=document.createElement('option');opt.value='';opt.textContent='Você precisa publicar um imóvel primeiro';select.appendChild(opt); }
+    const modal=document.getElementById('plans-test-modal'); modal.classList.remove('hidden'); modal.classList.add('flex');
+  }
+  function closePlansTestModal(){const modal=document.getElementById('plans-test-modal');modal.classList.add('hidden');modal.classList.remove('flex');}
+  async function activateTestPlan(planId) {
+    if (!isTestPlansWindowOpen()) {
+      showToast('Período de teste encerrado','Não é mais possível ativar planos em modo de teste.','fa-lock');
+      closePlansTestModal();
+      return;
+    }
+    if (!Object.prototype.hasOwnProperty.call(testPlanConfig, planId)) {
+      showToast('Plano inválido','Selecione um dos planos disponíveis.','fa-triangle-exclamation');
+      return;
+    }
+    const id=document.getElementById('plan-test-listing').value;
+    const prop=propertyList.find(p=>p.id===id);
+    if(!prop || !currentUser.isLoggedIn || prop.ownerId!==currentUser.uid){showToast('Selecione um anúncio seu','Publique um imóvel ou selecione uma publicação da sua conta.','fa-triangle-exclamation');return;}
+    const cfg=testPlanConfig[planId];
+    const updated={...prop,planId,planLabel:cfg.label,planExpiresAt:cfg.days?new Date(Math.min(Date.now()+cfg.days*86400000, TEST_PLANS_END_AT)).toISOString():null,planTestMode:planId!=='free',planStatus:planId==='free'?'inactive':'test',planPaymentStatus:'unpaid'};
+    try {
+      await window.firebaseBridge.saveProperty(updated);
+      propertyList=propertyList.map(p=>p.id===id?updated:p);
+      renderPropertiesVitrine();renderPlanFeatured();closePlansTestModal();
+      showToast('Plano de teste atualizado',planId==='free'?'O anúncio voltou à vitrine normal.':`O anúncio foi colocado na vitrine de destaque (${cfg.label}) até o fim do período de teste ou por no máximo 30 dias. Nenhum pagamento foi realizado.`,'fa-circle-check');
+    } catch(err) { console.error(err); showToast('Não foi possível ativar',window.firebaseBridge?.friendlyError(err)||'Verifique as regras do Firestore e tente novamente.','fa-triangle-exclamation'); }
+  }
+  window.openPlansTestModal=openPlansTestModal; window.closePlansTestModal=closePlansTestModal; window.activateTestPlan=activateTestPlan;
+
   function renderPropertiesVitrine() {
     const slider = document.getElementById('properties-slider');
     slider.innerHTML = '';
 
+    const normalProperties = propertyList.filter(p => !isPlanActive(p));
     const filtered = activeFilter === 'todos' 
-      ? propertyList 
-      : propertyList.filter(p => p.type === activeFilter);
+      ? normalProperties 
+      : normalProperties.filter(p => p.type === activeFilter);
 
-    document.getElementById('count-todos').textContent = propertyList.length;
-    document.getElementById('slider-count-info').textContent = `Exibindo ${filtered.length} de ${propertyList.length} imóveis`;
+    document.getElementById('count-todos').textContent = propertyList.filter(p => !isPlanActive(p)).length;
+    document.getElementById('slider-count-info').textContent = `Exibindo ${filtered.length} de ${normalProperties.length} imóveis sem plano`;
+    renderPlanFeatured();
 
     if (filtered.length === 0) {
       slider.innerHTML = `
@@ -1020,6 +1132,15 @@
     document.getElementById('announce-modal').classList.add('hidden');
   }
 
+  function updateLeisureAmenities() {
+    const type = document.getElementById('prop-type')?.value;
+    const wrap = document.getElementById('leisure-amenities-wrap');
+    if (wrap) wrap.classList.toggle('hidden', type !== 'lazer');
+    if (type !== 'lazer') {
+      document.querySelectorAll('.prop-amenity:checked').forEach(el => { el.checked = false; });
+    }
+  }
+
   function updatePriceLabelByType() {
     const type = document.getElementById('prop-type').value;
     const label = document.getElementById('form-price-label');
@@ -1126,6 +1247,9 @@
     const kitchensVal = document.getElementById('prop-kitchens').value;
     const sunVal = document.getElementById('prop-sun').value;
     const descriptionVal = document.getElementById('prop-description').value.trim();
+    const amenitiesVal = type === 'lazer'
+      ? Array.from(document.querySelectorAll('.prop-amenity:checked')).map(el => el.value)
+      : [];
 
     const formattedPrice = `${currencySymbol} ${priceVal}`;
     
@@ -1153,6 +1277,7 @@
       price: formattedPrice,
       meters: metersVal || 'Não informado',
       description: descriptionVal,
+      amenities: amenitiesVal,
       address: address,
       houseNumber: houseNumber,
       reference: reference,

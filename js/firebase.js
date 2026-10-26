@@ -169,7 +169,9 @@ const bridge = {
   async saveProperty(property) {
     if (!auth.currentUser) throw new Error('Faça login para publicar um imóvel.');
     if (property.ownerId !== auth.currentUser.uid) throw new Error('A conta autenticada não corresponde ao proprietário.');
-    const data = { ...property, ownerId: auth.currentUser.uid, createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
+    const data = { ...property, ownerId: auth.currentUser.uid, updatedAt: serverTimestamp() };
+    // Keep the original publication date when editing a listing or changing its test plan.
+    if (!property.createdAt) data.createdAt = serverTimestamp();
     await setDoc(doc(db, 'properties', property.id), data);
   },
   async deleteProperty(propertyId) {
