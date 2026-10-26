@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#050d16">
+  <title>Imóvel | OpenWord</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#050d16;color:#f8fafc;font-family:'Nunito Sans',sans-serif} .detail-shell{width:min(1180px,100%);margin:auto;padding:24px 16px 48px}.panel{background:#081827;border:1px solid #12364a;border-radius:20px;overflow:hidden}.neon{color:#00e6a8}.muted{color:#9eb3c7}.photo-main{height:clamp(260px,55vw,620px);background:#02070c;position:relative;display:flex;align-items:center;justify-content:center}.photo-main img{width:100%;height:100%;object-fit:contain}.nav-photo{position:absolute;top:50%;transform:translateY(-50%);border:1px solid #ffffff30;background:#04111dcc;width:44px;height:44px;border-radius:50%;display:grid;place-items:center}.nav-photo:hover{background:#00e6a8;color:#031018}.thumb{width:88px;height:66px;object-fit:cover;border-radius:9px;border:2px solid transparent;cursor:pointer;flex:none}.thumb.active{border-color:#00e6a8}.route-btn,.contact-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:48px;border-radius:12px;font-weight:900;padding:12px}.contact-btn{background:#00c995;color:#00120e}.route-btn{background:#10283a;border:1px solid #1d5266;color:#e2f7ff}.spec{padding:10px 12px;border:1px solid #173145;border-radius:11px;background:#07131f;overflow-wrap:anywhere}.badge{display:inline-flex;border-radius:999px;padding:5px 10px;font-weight:900;font-size:12px}.detail-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:18px}.description{white-space:pre-line;overflow-wrap:anywhere}@media(max-width:760px){.detail-shell{padding:14px 12px 32px}.detail-grid{grid-template-columns:minmax(0,1fr)}.photo-main{height:clamp(250px,70vw,470px)}.panel{border-radius:16px}.nav-photo{width:38px;height:38px}.thumb{width:76px;height:58px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <header class="border-b border-cyan-950/80 bg-[#050d16]/95">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-3"><a href="./" class="text-2xl sm:text-3xl font-black tracking-tight">Open<span class="text-emerald-300">Word</span></a><a href="./" class="text-sm font-bold muted hover:text-white"><i class="fa-solid fa-arrow-left mr-2"></i>Voltar aos imóveis</a></div>
+  </header>
+  <main class="detail-shell">
+    <div id="loading" class="panel p-8 text-center muted"><i class="fa-solid fa-spinner fa-spin text-2xl neon mb-3"></i><p>Carregando informações do imóvel...</p></div>
+    <div id="error" class="hidden panel p-8 text-center"><h1 class="text-xl font-black mb-2">Não foi possível abrir este imóvel</h1><p class="muted mb-5" id="error-message">O anúncio pode ter sido removido ou o link está incorreto.</p><a href="./" class="contact-btn">Voltar para o OpenWord</a></div>
+    <article id="property-page" class="hidden">
+      <div class="mb-5"><span id="type-badge" class="badge mb-3"></span><h1 id="title" class="text-2xl sm:text-4xl font-black leading-tight"></h1><p id="address" class="muted mt-2"><i class="fa-solid fa-location-dot neon mr-2"></i></p></div>
+      <div class="detail-grid">
+        <section class="panel">
+          <div class="photo-main"><img id="main-photo" alt="Foto do imóvel"><button id="prev-photo" class="nav-photo left-3" aria-label="Foto anterior"><i class="fa-solid fa-chevron-left"></i></button><button id="next-photo" class="nav-photo right-3" aria-label="Próxima foto"><i class="fa-solid fa-chevron-right"></i></button><span id="photo-count" class="absolute bottom-3 left-3 rounded-lg bg-black/75 px-3 py-1 text-xs font-bold"></span></div>
+          <div id="thumbnails" class="flex gap-2 overflow-x-auto p-3"></div>
+          <div class="px-4 pb-4 text-xs muted"><span id="published"></span><span id="code" class="float-right"></span></div>
+        </section>
+        <aside class="space-y-4 min-w-0">
+          <section class="panel p-4 sm:p-5">
+            <div class="flex items-start justify-between gap-3"><div><p id="price-label" class="text-xs uppercase tracking-widest muted"></p><p id="price" class="text-3xl font-black neon mt-1"></p></div><div class="text-right"><p class="text-xs uppercase tracking-widest muted">Lote</p><p id="lot" class="font-bold mt-1"></p></div></div>
+            <div id="rooms" class="grid grid-cols-2 gap-2 mt-4"></div>
+            <div id="solar" class="spec mt-3 text-sm"></div>
+            <div id="description-wrap" class="hidden mt-4"><h2 class="font-extrabold mb-2">Informações da casa mais detalhadas</h2><p id="description" class="description text-sm muted"></p></div>
+            <div id="amenities-wrap" class="hidden mt-4"><h2 class="font-extrabold mb-3"><i class="fa-solid fa-list-check text-yellow-400 mr-2"></i>O que este espaço oferece</h2><div id="amenities" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm muted"></div></div>
+          </section>
+          <section class="panel p-4 flex items-center gap-3"><img id="owner-photo" class="w-14 h-14 rounded-full object-cover border-2 border-emerald-400" alt="Foto do anunciante"><div class="min-w-0 flex-1"><h2 id="owner-name" class="font-black truncate"></h2><p id="owner-phone" class="text-sm muted break-all"></p></div></section>
+          <a id="contact" class="contact-btn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp text-lg"></i> ENTRAR EM CONTATO</a>
+          <a id="route" class="route-btn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-route"></i> Traçar rota no Google Maps</a>
+          <p class="text-xs muted">A rota será aberta no Google Maps usando o endereço informado no anúncio. Se o endereço estiver incompleto, o mapa poderá pedir que você confirme o local.</p>
+        </aside>
+      </div>
+    </article>
+  </main>
+  <script type="module" src="js/firebase.js"></script>
+  <script type="module" src="js/property-detail.js"></script>
+</body>
+</html>

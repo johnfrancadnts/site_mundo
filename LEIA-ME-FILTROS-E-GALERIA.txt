@@ -1,0 +1,16 @@
+OPENWORD — FILTROS DOS DESTAQUES E GALERIA AMPLIADA
+
+Alterações nesta versão:
+1. A vitrine de anúncios com planos agora respeita o filtro de categoria compartilhado com a vitrine normal: Todos, Venda, Aluguel e Lazer.
+2. Removido o selo de prioridade “IMOBILIÁRIA • PRIORIDADE MÁXIMA” dos cartões de destaque; o selo passa a identificar a finalidade do anúncio (Venda, Aluguel ou Área de Lazer), como na vitrine normal.
+3. Ao clicar na foto ou no botão de ampliar de um cartão, abre-se a galeria daquele imóvel.
+4. Na visualização ampliada, setas anterior/próxima permitem percorrer todas as fotos do mesmo anúncio sem fechar a janela. As setas ficam ocultas quando o anúncio tem apenas uma foto.
+5. A ordenação por prioridade de plano na vitrine de destaque foi mantida.
+
+Publicação:
+- Faça backup do repositório antes de substituir os arquivos.
+- Envie os arquivos preservando as pastas css/ e js/.
+- Faça commit no GitHub e aguarde o GitHub Pages atualizar.
+- Teste os filtros Todos/Venda/Aluguel/Lazer e a galeria com um imóvel que tenha várias fotos.
+
+Validação executada: node --check nos scripts app.js e firebase.js e verificação da integridade do ZIP. Não foi realizado teste de ponta a ponta contra o Firebase publicado.

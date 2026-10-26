@@ -105,7 +105,7 @@
             <div class="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-slate-800">
               <span class="text-xs font-black" style="color:${cfg.color}">${prop.price}</span>
               <div class="flex items-center gap-2">
-                <button onclick="showMainView('#destaque'); setAsFeatured('${prop.id}')" class="text-[10px] text-neon hover:underline font-bold">
+                <button onclick="showMainView('#plan-featured-section'); setAsFeatured('${prop.id}')" class="text-[10px] text-neon hover:underline font-bold">
                   Ver Destaque <i class="fa-solid fa-arrow-right"></i>
                 </button>
                 ${currentUser.isLoggedIn && prop.ownerId === currentUser.uid ? `<button onclick="deleteProperty('${prop.id}')" class="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg border border-red-900/70 bg-red-950/50 text-red-300 hover:bg-red-700 hover:text-white text-[10px] font-bold transition" title="Apagar este imóvel"><i class="fa-solid fa-trash"></i> Apagar</button>` : ''}
@@ -457,7 +457,7 @@
     if (myProps.length === 0) {
       showToast('Minhas Publicações', 'Você ainda não possui nenhum imóvel publicado.', 'fa-info-circle');
     } else {
-      showMainView('#destaque');
+      showMainView('#plan-featured-section');
       setAsFeatured(myProps[0].id);
       showToast('Minhas Publicações', `Mostrando suas publicações (${myProps.length} imóvel).`, 'fa-house');
     }
@@ -951,7 +951,7 @@
               <div class="flex items-center gap-1.5 min-w-0"><img src="${ownerPhoto}" alt="${prop.ownerName || 'Proprietário'}" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover border border-neon shrink-0"><div class="truncate"><div class="text-[11px] font-bold text-white truncate hover:text-neon">${prop.ownerName || 'Proprietário'}</div><div class="text-[9px] text-slate-400 font-mono truncate">${prop.ownerPhone || ''}</div></div></div>
               <a href="https://wa.me/${cleanPhone}?text=${whatsMsg}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="px-2 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-[11px] font-bold transition flex items-center gap-1 shrink-0 shadow"><i class="fa-brands fa-whatsapp text-xs"></i><span class="hidden xs:inline">WhatsApp</span></a>
             </div>
-            <div class="mt-2 flex items-center gap-2"><button onclick="setAsFeatured('${prop.id}')" class="flex-1 py-1.5 rounded-lg bg-slate-800 hover:bg-neon hover:text-darknavy text-slate-200 text-[11px] font-bold transition border border-slate-700 hover:border-neon flex items-center justify-center gap-1"><i class="fa-solid fa-star text-yellow-400"></i> Ver no Destaque</button>${currentUser.isLoggedIn && prop.ownerId === currentUser.uid ? `<button onclick="deleteProperty('${prop.id}')" class="py-1.5 px-2 rounded-lg bg-red-950/70 hover:bg-red-600 text-red-200 text-[11px] font-bold transition border border-red-900 flex items-center justify-center gap-1" title="Apagar meu anúncio"><i class="fa-solid fa-trash"></i> Apagar</button>` : ''}</div>
+            <div class="mt-2 flex items-center gap-2"><button onclick="setAsFeatured('${prop.id}')" class="flex-1 py-1.5 rounded-lg bg-slate-800 hover:bg-neon hover:text-darknavy text-slate-200 text-[11px] font-bold transition border border-slate-700 hover:border-neon flex items-center justify-center gap-1"><i class="fa-solid fa-star text-yellow-400"></i> Ver imóvel</button>${currentUser.isLoggedIn && prop.ownerId === currentUser.uid ? `<button onclick="deleteProperty('${prop.id}')" class="py-1.5 px-2 rounded-lg bg-red-950/70 hover:bg-red-600 text-red-200 text-[11px] font-bold transition border border-red-900 flex items-center justify-center gap-1" title="Apagar meu anúncio"><i class="fa-solid fa-trash"></i> Apagar</button>` : ''}</div>
             <div class="mt-1.5 text-[9px] text-slate-500 flex items-center justify-between gap-2"><span class="truncate">Publicado ${prop.publishedAt || 'recentemente'}</span><span class="shrink-0">${prop.code || ''}</span></div>
           </div>
         </div>`;
@@ -1102,7 +1102,7 @@
 
             <div class="mt-2 flex items-center gap-2">
               <button onclick="setAsFeatured('${prop.id}')" class="flex-1 py-1.5 rounded-lg bg-slate-800 hover:bg-neon hover:text-darknavy text-slate-200 text-[11px] font-bold transition border border-slate-700 hover:border-neon flex items-center justify-center gap-1">
-                <i class="fa-solid fa-star text-yellow-400"></i> Ver no Destaque
+                <i class="fa-solid fa-house text-neon"></i> Ver imóvel
               </button>
               ${currentUser.isLoggedIn && prop.ownerId === currentUser.uid ? `<button onclick="deleteProperty('${prop.id}')" class="py-1.5 px-2 rounded-lg bg-red-950/70 hover:bg-red-600 text-red-200 text-[11px] font-bold transition border border-red-900 flex items-center justify-center gap-1" title="Apagar meu anúncio"><i class="fa-solid fa-trash"></i> Apagar</button>` : ''}
             </div>
@@ -1167,13 +1167,14 @@
   }
 
   function setAsFeatured(propId) {
+    // Abre uma página própria para o imóvel em nova aba, sem ocupar espaço na vitrine.
     const found = propertyList.find(p => p.id === propId);
-    if (found) {
-      currentFeatured = found;
-      featuredPhotoIndex = 0;
-      updateFeaturedUI();
-      document.getElementById('destaque').scrollIntoView({ behavior: 'smooth' });
+    if (!found) {
+      showToast('Imóvel não encontrado', 'Atualize a página e tente novamente.', 'fa-house');
+      return;
     }
+    const detailUrl = new URL(`imovel.html?id=${encodeURIComponent(propId)}`, window.location.href);
+    window.open(detailUrl.href, '_blank', 'noopener,noreferrer');
   }
 
   // Modal Multi-step Logic
@@ -1400,7 +1401,7 @@
     
     closeModal();
     showToast('Publicado com Sucesso!', 'Seu imóvel foi adicionado e está em destaque.', 'fa-circle-check');
-    showMainView('#destaque');
+    showMainView('#plan-featured-section');
   }
 
   window.deleteProperty = deleteProperty;

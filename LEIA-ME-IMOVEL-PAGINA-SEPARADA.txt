@@ -1,0 +1,22 @@
+OPENWORD — DETALHES DO IMÓVEL EM PÁGINA SEPARADA
+
+O que mudou:
+- A antiga área grande de detalhes dentro da página inicial foi escondida para não ocupar espaço na vitrine.
+- Os botões "Ver no Destaque" agora se chamam "Ver imóvel" e abrem o anúncio em uma nova aba.
+- Foi adicionada a página imovel.html, que carrega o anúncio pelo seu ID usando o Firebase já configurado.
+- A página de detalhes mostra fotos com setas para avançar/voltar, preço, lote, cômodos, posição solar, descrição, comodidades da área de lazer, dados do anunciante e botão de WhatsApp.
+- O botão "Traçar rota no Google Maps" abre o Google Maps usando o endereço cadastrado no anúncio.
+- O layout é responsivo para celular, tablet e computador.
+- Os dados dos imóveis continuam no Firestore; a página não cria dados fictícios nem altera anúncios.
+
+Como publicar:
+1. Faça backup do repositório atual.
+2. Envie os arquivos index.html e js/app.js atualizados e adicione imovel.html e js/property-detail.js.
+3. Preserve css/styles.css, js/firebase.js, firestore.rules e as demais pastas atuais.
+4. Faça commit no GitHub e aguarde o GitHub Pages atualizar.
+5. Teste um anúncio com várias fotos e endereço completo.
+
+Observações:
+- O Google Maps usa o endereço informado pelo anunciante. Se o endereço cadastrado não for preciso/completo, o destino poderá não ser exato.
+- A página de detalhes precisa que o Firebase/Firestore permita leitura pública dos anúncios, como o feed atual já exige.
+- Os scripts foram verificados sintaticamente; ainda não foi possível validar a navegação no site publicado e no Firebase real.

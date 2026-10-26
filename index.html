@@ -55,7 +55,7 @@
 </div>
 <!-- Desktop Navigation -->
 <nav class="hidden lg:flex items-center gap-5 xl:gap-7 font-medium text-xs lg:text-sm text-slate-300 shrink-0">
-<a class="hover:text-neon transition" href="javascript:showMainView('#destaque')">Destaque</a>
+<a class="hover:text-neon transition" href="javascript:showMainView('#plan-featured-section')">Destaque</a>
 <a class="hover:text-neon transition" href="javascript:showMainView('#vitrine-section')">Imóveis</a>
 <a class="hover:text-neon transition" href="javascript:showMainView('#filtros-section'); filterProperties('aluguel');">Aluguéis</a>
 <a class="hover:text-neon transition" href="javascript:showMainView('#filtros-section'); filterProperties('venda');">A Venda</a>
@@ -110,7 +110,7 @@
 </div>
 <!-- Mobile Sub-Nav com rolagem horizontal suave (não empilha, não estoura) -->
 <div class="lg:hidden flex items-center gap-3 overflow-x-auto no-scrollbar pt-2 border-t border-cyan-950/40 mt-2 text-xs text-slate-300 whitespace-nowrap">
-<a class="px-2.5 py-1 rounded-lg hover:text-neon hover:bg-slate-900 transition shrink-0" href="javascript:showMainView('#destaque')">Destaque</a>
+<a class="px-2.5 py-1 rounded-lg hover:text-neon hover:bg-slate-900 transition shrink-0" href="javascript:showMainView('#plan-featured-section')">Destaque</a>
 <a class="px-2.5 py-1 rounded-lg hover:text-neon hover:bg-slate-900 transition shrink-0" href="javascript:showMainView('#vitrine-section')">Imóveis</a>
 <a class="px-2.5 py-1 rounded-lg hover:text-neon hover:bg-slate-900 transition shrink-0" href="javascript:showMainView('#filtros-section'); filterProperties('aluguel');">Aluguéis</a>
 <a class="px-2.5 py-1 rounded-lg hover:text-neon hover:bg-slate-900 transition shrink-0" href="javascript:showMainView('#filtros-section'); filterProperties('venda');">A Venda</a>
@@ -171,7 +171,7 @@
 </section>
 <!-- END: QuickFilters -->
 <!-- BEGIN: FeaturedProperty (Coluna única no mobile / 2 colunas no desktop) -->
-<section class="max-w-7xl mx-auto px-3 sm:px-6 mb-12 sm:mb-16" id="destaque">
+<section class="hidden" id="destaque" aria-hidden="true">
 <div class="hidden relative bg-cardnavy/95 border-2 border-neon rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 shadow-[0_0_30px_-5px_rgba(0,230,168,0.25)] transition duration-300" id="featured-content-card">
 <!-- Badge -->
 <div class="absolute -top-3 left-4 sm:left-8 bg-neon text-darknavy text-[10px] sm:text-xs font-black uppercase px-3 py-1 rounded-full shadow-md tracking-wider flex items-center gap-1.5" id="featured-badge">
@@ -459,7 +459,7 @@
 <div>
 <h4 class="text-white font-semibold mb-2 sm:mb-3 text-xs uppercase tracking-wider">Navegação</h4>
 <ul class="space-y-1.5 text-xs">
-<li><a class="hover:text-neon transition" href="javascript:showMainView('#destaque')">Imóvel Destaque</a></li>
+<li><a class="hover:text-neon transition" href="javascript:showMainView('#plan-featured-section')">Imóvel Destaque</a></li>
 <li><a class="hover:text-neon transition" href="javascript:showMainView('#vitrine-section')">Vitrine de Imóveis</a></li>
 <li><button class="hover:text-neon transition text-left" onclick="handleAnnounceClick()">Anunciar Imóvel</button></li>
 </ul>
